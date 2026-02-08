@@ -20,11 +20,6 @@ HardwareTimer *timer = nullptr;
 volatile uint32_t readIMU = 0;
 volatile bool stackingInterrupts = false;
 
-// SD card reader
-SdFat sd;
-SdFile dir;
-SdFile entry;
-
 Barometer barometer;
 IMUDriver imuDriver;
 GPS gps;
