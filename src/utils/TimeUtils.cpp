@@ -65,7 +65,6 @@ PreciseDateTime TimeUtils::getPreciseTime()
 {
     uint32_t nowMillis = millis();
     uint32_t elapsedSinceResync = nowMillis - baseMillis;
-    nowMillis += 1;
     
     return {
         baseUnix + (elapsedSinceResync / 1000),
