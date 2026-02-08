@@ -50,8 +50,6 @@ void setup() {
 
     gps.init();
 
-    listDir("/logs");
-
     timer = new HardwareTimer(TIM3);
     timer->setOverflow(50000, MICROSEC_FORMAT);
     timer->attachInterrupt(onTimerIMU);
