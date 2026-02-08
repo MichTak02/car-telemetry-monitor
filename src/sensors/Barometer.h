@@ -13,6 +13,7 @@ class Barometer {
         Adafruit_BMP280 _bmp;
         float _rawValue;
         PreciseDateTime _timestamp;
+        float _temp;
 
         float ringBuff[RING_BUFF_LEN];
         uint8_t counter = 0;
@@ -21,15 +22,39 @@ class Barometer {
     public:
         static const Unit DEFAULT_UNIT = UNIT_PA;
 
+        /**
+         * @brief Initializes barometer module
+         * 
+         * @return true if initialization succeeds, otherwise false
+         */
         bool init();
-        void readData();
-        float getPressure();
-        float getAltitude();
-        float getTemperature();
-        uint16_t getNormalizedPressure();
 
+        /**
+         * @brief Reads data from barometer module
+         * 
+         */
+        void readData();
+
+        /**
+         * @brief Returns lastly set pressure in given unit
+         * 
+         * @param unit 
+         * @return pressure in given unit 
+         */
         float getValue(Unit unit = DEFAULT_UNIT);
+
+        /**
+         * @brief Get the Sample object
+         * 
+         * @param unit 
+         * @return FloatSample 
+         */
         FloatSample getSample(Unit unit = DEFAULT_UNIT);
+
+        /**
+         * @brief Logs measured data into SD card
+         * 
+         */
         void logData();
 };
 

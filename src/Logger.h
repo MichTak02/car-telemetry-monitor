@@ -15,13 +15,45 @@ class Logger {
         static SdFat _sd;
     
     public:
+        /**
+         * @brief Initializes SD card module over SPI interface and creates log file
+         * 
+         * @param csPin CS pin of SD card module
+         * @param folder path to logs folder
+         * @return true if initialization succeeds, otherwise false
+         */
         static bool init(uint8_t csPin, const String& folder);
+        
+        /**
+         * @brief Logs message to SD card
+         * 
+         * @param logLevel log level
+         * @param msg message
+         */
         static void log(LogLevel logLevel, const char* msg);
-        // static void log(LogLevel logLevel, SensorType sensorType, const char* msg);
+        
+        /**
+         * @brief Logs message to SD card
+         * 
+         * @param time Timestamp
+         * @param logLevel log level
+         * @param sensorType type of sensor
+         * @param msg message
+         */
         static void log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType, const char* msg);
-        // static void logAcc(AccelerometerData accData);
-        // static void logGyroSensor();
+        
+        /**
+         * @brief Logs pressure
+         * 
+         * @param pressureSample pressure
+         */
         static void logPressure(FloatSample pressureSample);
+        
+        /**
+         * @brief Logs measurment from IMU sensors (accelerometer, gyroscope, magnetometer)
+         * 
+         * @param sample sample from IMU sensors
+         */
         static void logIMUSample(IMUSample sample);
 };
 

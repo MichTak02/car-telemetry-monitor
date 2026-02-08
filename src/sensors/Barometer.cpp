@@ -8,35 +8,11 @@ bool Barometer::init()
     return true;
 }
 
-float Barometer::getPressure()
-{
-    
-    float pressure = _bmp.readPressure();
-    ringBuff[counter % RING_BUFF_LEN] = pressure;
-    counter += 1;
-
-    return pressure;
-}
-
-float Barometer::getAltitude()
-{
-    return _bmp.readAltitude(1019);
-}
-
-float Barometer::getTemperature()
-{
-    return _bmp.readTemperature();
-}
-
-
-uint16_t Barometer::getNormalizedPressure()
-{
-    return 0;
-}
 
 void Barometer::readData()
 {
     _rawValue = _bmp.readPressure();
+    _temp = _bmp.readTemperature();
     _timestamp = TimeUtils::getPreciseTime();
 }
 

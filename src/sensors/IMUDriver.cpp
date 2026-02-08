@@ -21,7 +21,7 @@ bool IMUDriver::init()
     return true;
 }
 
-bool IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp)
+void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp)
 {
     /* Get new sensor events with the readings */
     sensors_event_t a, g, t;
@@ -42,30 +42,25 @@ bool IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& t
     };
 
     temp = t.temperature;
-
-    // TODO co vrací status?
-    return a.acceleration.status & g.acceleration.status;
 }
 
-bool IMUDriver::readData()
+void IMUDriver::readData()
 {
     FloatTuple3 accel;
     FloatTuple3 gyro;
     float temp;
 
-    bool result = readData(accel, gyro, temp);
+    readData(accel, gyro, temp);
     _timestamp = TimeUtils::getPreciseTime();
 
     _accelerometer.setValues(accel);
     _gyroscope.setValues(gyro);
-    return result;
 }
 
 IMUSample IMUDriver::getIMUSample(Unit accelUnit, Unit gyroUnit, Unit magUnit)
 {
     PreciseDateTime time = _timestamp;
     return {
-        // TODO revert
         _accelerometer.getValues(accelUnit),
         _gyroscope.getValues(gyroUnit),
         // TODO add magnetometer

@@ -16,7 +16,6 @@
 HardwareSerial Serial2(PA3, PA2);
 
 // Timers
-// TODO dát do definitions?
 HardwareTimer *timer = nullptr;
 volatile uint32_t readIMU = 0;
 volatile bool stackingInterrupts = false;
@@ -30,20 +29,9 @@ Barometer barometer;
 IMUDriver imuDriver;
 GPS gps;
 
-// TODO smazat
-void listDir(const char* path);
-
-// TODO make timers
+// TODO modify timer(s)
 void onTimerIMU() {
   readIMU += 1;
-}
-
-void onTimerGPS() {
-
-}
-
-void onTimerBarometer() {
-
 }
 
 
@@ -88,40 +76,6 @@ void loop() {
   }
 
   gps.readData();
-
-  // static uint32_t counter = 0;
-  // char buff[128];
-  // sprintf(buff, "This is message number %d", counter);
-  //Logger::log(LOG_INFO, buff);
   
   TimeUtils::resyncTime();
-}
-
-
-// TODO smazat, z internetu na testování
-void listDir(const char* path) {
-  if (!dir.open(path)) {
-    Serial.println("Failed to open directory");
-    return;
-  }
-
-  Serial.print("Listing: ");
-  Serial.println(path);
-
-  while (entry.openNext(&dir, O_RDONLY)) {
-
-    char name[128];
-    entry.getName(name, sizeof(name));
-    Serial.print(name);
-
-    if (entry.isDir()) {
-      Serial.println("  <DIR>");
-    } else {
-      Serial.print("  ");
-      Serial.print(entry.fileSize());
-      Serial.println(" bytes");
-    }
-    entry.close();
-  }
-  dir.close();
 }

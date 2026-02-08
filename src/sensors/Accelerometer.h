@@ -17,7 +17,19 @@ class Accelerometer {
     public:
         static const Unit DEFAULT_UNIT = UNIT_MS2;
 
+        /**
+         * @brief Sets raw values from accelerometer
+         * 
+         * @param accelValues accelerometer values
+         */
         void setValues(FloatTuple3 accelValues);
+        
+        /**
+         * @brief Returns lastly set values in given unit
+         * 
+         * @param unit unit of returned value, in case of invalid unit, default one is used and operation is logged
+         * @return values in given unit
+         */
         FloatTuple3 getValues(Unit unit = DEFAULT_UNIT);
 };
 

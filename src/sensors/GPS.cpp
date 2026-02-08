@@ -25,6 +25,7 @@ void GPS::readData()
         }
     }
 
+    // TODO smazat výpisy
     if (_gps.satellites.isValid() && _gps.satellites.isUpdated()) {
         Serial.print("Sattelites: ");
         Serial.println(_gps.satellites.value());
@@ -35,8 +36,4 @@ void GPS::readData()
         Serial.println(_gps.location.lat());
         Serial.println(_gps.location.lng());
     }
-
-    if (false & printed)
-        Serial.println("---------");
-    
 }
