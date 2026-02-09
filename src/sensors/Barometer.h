@@ -10,6 +10,7 @@
 
 class Barometer {
     private:
+        const byte I2C_ADDRESS = 0x76;
         Adafruit_BMP280 _bmp;
         float _rawValue;
         PreciseDateTime _timestamp;

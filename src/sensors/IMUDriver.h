@@ -12,6 +12,7 @@
 
 class IMUDriver {
     private:
+        const byte I2C_ADDRESS = 0x69;
         Adafruit_MPU6050 _mpu;
         Accelerometer _accelerometer;
         Gyroscope _gyroscope;

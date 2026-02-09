@@ -2,7 +2,7 @@
 
 bool Barometer::init()
 {
-    if (!_bmp.begin(0x76)) {
+    if (!_bmp.begin(I2C_ADDRESS)) {
         return false;
     }
     return true;

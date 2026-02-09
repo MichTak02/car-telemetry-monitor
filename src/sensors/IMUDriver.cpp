@@ -5,7 +5,7 @@
 
 bool IMUDriver::init()
 {
-    if (!_mpu.begin(0x69)) {
+    if (!_mpu.begin(I2C_ADDRESS)) {
         return false;
     }
         
