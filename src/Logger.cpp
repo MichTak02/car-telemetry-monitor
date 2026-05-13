@@ -2,35 +2,8 @@
 #include "utils/TimeUtils.h"
 #include "utils/GenericUtils.h"
 
-#define FLUSH_TIME_MS 1000
-
-String Logger::_path;
-File Logger::_file;
-SdFat Logger::_sd;
-
-bool Logger::init(uint8_t csPin, const String& folder)
-{
-    pinMode(csPin, OUTPUT);
-
-    char time[64] = {0};
-    TimeUtils::getTimeStrDashed(time);
-    _path = folder + "/" + time + ".log";
-
-    if (!_sd.begin(csPin, SD_SCK_MHZ(4))) {
-        return false;
-    }
-
-    // TODO co když se nepodaří najít / vytvořit soubor
-    // TODO vytvoření souboru do funkce (použití při vytváření dalších souborů)
-    _file = _sd.open(_path, O_WRITE | O_CREAT);
-    
-    // Prevent SD card from corrupting
-    _file.preAllocate(4 * 1024 * 1024); // Preallocate 4 MB
-    _file.seekSet(0);
-    _file.sync();
-
-    return true;
-}
+char Logger::lastErrorMsg[] = {0};
+bool Logger::updatedLastErrorMsg = false;
 
 void Logger::log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType, const char *msg)
 {
@@ -40,26 +13,29 @@ void Logger::log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType,
     char timeStr[64] = {0};
     TimeUtils::convertPreciseTimeStr(time, timeStr);
     
-    int writtenBytes = snprintf(buff, sizeof(buff), "%s,%d,%d,%s\n", timeStr, logLevel, sensorType, msg);
+    int writtenBytes = snprintf(buff, sizeof(buff), "%s|%d|%d|%s\n", timeStr, logLevel, sensorType, msg);
     
-    _file.write(buff);
+    if (logLevel == LOG_ERROR and sensorType != NO_SENSOR) {
+        updatedLastErrorMsg = true;
+        strncpy(lastErrorMsg, msg, sizeof(lastErrorMsg) - 1);
+        lastErrorMsg[sizeof(lastErrorMsg) - 1] = '\0'; // Ensure null-termination
+    }
+
+    SdReader::writeData(buff);
     
+#ifdef DEBUG
+    if (logLevel != LOG_DATA) {
+        Serial1.write(buff);
+    }
+#endif
+
     // Log if message was truncated
     if (writtenBytes >= sizeof(buff)) {
         log(LOG_WARN, "Previous log was truncated");
     }
-
-    // TODO dát do funkce, která bude volána periodicky pomocí timeru
-    if (false || millis() - lastMillis > 1000) {
-        _file.truncate();
-        _file.sync();
-        lastMillis = millis();
-        Serial.print(buff);
-    }
 }
 
-
-void Logger::log(LogLevel logLevel, const char *msg)
+void Logger::log(LogLevel logLevel, SensorType sensorType, const char *msg)
 {
     static uint32_t lastFlush = millis();
     char buff[256] = {0};
@@ -67,6 +43,11 @@ void Logger::log(LogLevel logLevel, const char *msg)
     PreciseDateTime preciseTime = TimeUtils::getPreciseTime();
 
     log(preciseTime, logLevel, NO_SENSOR, msg);
+}
+
+void Logger::log(LogLevel logLevel, const char *msg)
+{
+    log(logLevel, NO_SENSOR, msg);
 }
 
 void Logger::logIMUSample(IMUSample sample)
@@ -84,16 +65,27 @@ void Logger::logIMUSample(IMUSample sample)
         sample.mag.z
     };
 
-    char delim = ',';
+    const char delim = ',';
     
-    GenericUtils::FloatsToStr(values, 9, delim, msg);
-    log(sample.timestamp, LOG_DATA, IMU, msg);
+    GenericUtils::floatsToStr(values, 9, delim, msg);
+    log(sample.timestamp, LOG_DATA, SENSOR_IMU, msg);
+}
+
+const char *Logger::getLastErrorMsg()
+{
+    updatedLastErrorMsg = false;
+    return lastErrorMsg;
+}
+
+bool Logger::hasUpdatedErrorMsg()
+{
+    return updatedLastErrorMsg;
 }
 
 void Logger::logPressure(FloatSample pressureSample)
 {
     char msg[16] = {0};
-    GenericUtils::FloatsToStr(&pressureSample.value, 1, '_', msg);
+    GenericUtils::floatsToStr(&pressureSample.value, 1, '_', msg);
 
-    log(pressureSample.timestamp, LOG_DATA, BAROMETER, msg);
+    log(pressureSample.timestamp, LOG_DATA, SENSOR_BAROMETER, msg);
 }

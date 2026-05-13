@@ -5,25 +5,14 @@
 #include <Arduino.h>
 #include <SdFat.h>
 #include "definitions.h"
+#include "SdReader.h"
 
 class Logger {
     private:
-        const double logInterval = 1000.0; // in milliseconds
-        static unsigned long lastLogTime;
-        static String _path;
-        static File _file;
-        static SdFat _sd;
+        static char lastErrorMsg[128];
+        static bool updatedLastErrorMsg;
     
     public:
-        /**
-         * @brief Initializes SD card module over SPI interface and creates log file
-         * 
-         * @param csPin CS pin of SD card module
-         * @param folder path to logs folder
-         * @return true if initialization succeeds, otherwise false
-         */
-        static bool init(uint8_t csPin, const String& folder);
-        
         /**
          * @brief Logs message to SD card
          * 
@@ -31,7 +20,16 @@ class Logger {
          * @param msg message
          */
         static void log(LogLevel logLevel, const char* msg);
-        
+
+        /**
+         * @brief Logs message to SD card
+         * 
+         * @param logLevel log level
+         * @param sensorType type of sensor
+         * @param msg message
+         */
+        static void log(LogLevel logLevel, SensorType sensorType, const char *msg);
+
         /**
          * @brief Logs message to SD card
          * 
@@ -55,6 +53,15 @@ class Logger {
          * @param sample sample from IMU sensors
          */
         static void logIMUSample(IMUSample sample);
+
+        /**
+         * @brief Get the last error message
+         * 
+         * @return const char* last error message
+         */
+        static const char* getLastErrorMsg();
+
+        static bool hasUpdatedErrorMsg();
 };
 
 #endif
