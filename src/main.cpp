@@ -1,74 +1,222 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SdFat.h>
+#include <EasyNextionLibrary.h>
 
 #include "utils/TimeUtils.h"
 #include "utils/GenericUtils.h"
+#include "utils/NextionUtils.h"
 #include "Logger.h"
 #include "sensors/Accelerometer.h"
 #include "sensors/Barometer.h"
 #include "sensors/IMUDriver.h"
 #include "sensors/GPS.h"
+#include "SdReader.h"
+#include "processing/MotionFusion.h"
+#include "processing/VibrationAnalyzer.h"
+#include "processing/SpeedGetter.h"
+#include "processing/AltitudeFusion.h"
+#include "processing/AccelerationMagnitude.h"
+
+#include "display/DisplayCommunication.h"
+#include "definitions.h"
+#include "Settings.h"
 
 #define CS_PIN PA4
-#define PATH "logs"
 
-HardwareSerial Serial2(PA3, PA2);
+void handleEvents();
+
+// Nextion display
+HardwareSerial NextionSerial(PB11, PB10); // RX, TX
+EasyNex nex = EasyNex(NextionSerial);
 
 // Timers
 HardwareTimer *timer = nullptr;
-volatile uint32_t readIMU = 0;
-volatile bool stackingInterrupts = false;
+volatile uint32_t globalTickMs = 0;
 
-Barometer barometer;
-IMUDriver imuDriver;
-GPS gps;
+// Interrupts
+InterruptStruct baroInterrupt = InterruptStruct(500);
+InterruptStruct IMUInterrupt = InterruptStruct(50);
+InterruptStruct splitInterrupt = InterruptStruct(100000);
 
-// TODO modify timer(s)
-void onTimerIMU() {
-  readIMU += 1;
+InterruptStruct fusionInterrupt = InterruptStruct(50);
+InterruptStruct accelInterrupt = InterruptStruct(50);
+InterruptStruct vibrationInterrupt = InterruptStruct(50);
+
+InterruptStruct displayInterrupt = InterruptStruct(100);
+
+InterruptStruct* interruptList[] = {
+  &baroInterrupt,
+  &IMUInterrupt,
+  &splitInterrupt,
+  &fusionInterrupt,
+  &accelInterrupt,
+  &vibrationInterrupt,
+  &displayInterrupt
+};
+const uint8_t INTERRUPT_COUNT = sizeof(interruptList) / sizeof(interruptList[0]);
+
+StatusFlags statusFlags = {};
+EventFlags eventFlags = {};
+
+Barometer barometer = Barometer(statusFlags);
+IMUDriver imuDriver = IMUDriver(statusFlags);
+GPS gps = GPS(statusFlags);
+
+MotionFusion motionFusion = MotionFusion(imuDriver);
+VibrationAnalyzer vibrationAnalyzer = VibrationAnalyzer(imuDriver, Settings::getCurrent().impactThresholdLevel);
+SpeedGetter speedGetter = SpeedGetter(gps);
+
+AltitudeFusion altitudeFusion = AltitudeFusion(gps, barometer);
+AccelerationMagnitude accelMagnitude = AccelerationMagnitude(imuDriver);
+
+DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationAnalyzer, altitudeFusion, motionFusion, statusFlags);
+
+void onTimer() {
+  globalTickMs++;
 }
 
 
 void setup() {
-    Serial.begin(115200);
-    Wire.begin((uint32_t) PB7, (uint32_t) PB6);
+  Serial.begin(115200);
+  Wire.begin((uint32_t) PB7, (uint32_t) PB6);
 
-    TimeUtils::init();
-    
-    if (!Logger::init(CS_PIN, PATH)) {
-        Serial.println("Could not init Logger");
-    }
+  nex.begin(115200);
 
-    if (!imuDriver.init()) {
-      Serial.println("Could not init IMU driver");
-    }
+  NextionUtils::init(nex);
 
-    if (!barometer.init()) {
-      Serial.println("Could not init Barometer");
-    }
+  TimeUtils::init();
 
-    gps.init();
+  if (!SdReader::init(CS_PIN, statusFlags)) {
+      Serial.println("Could not init Logger");
+  }
 
-    timer = new HardwareTimer(TIM3);
-    timer->setOverflow(50000, MICROSEC_FORMAT);
-    timer->attachInterrupt(onTimerIMU);
-    timer->resume();
+  if (!imuDriver.init()) {
+    Serial.println("Could not init IMU driver");
+  }
+
+  if (!barometer.init()) {
+    Serial.println("Could not init Barometer");
+  }
+
+  gps.init();
+
+  timer = new HardwareTimer(TIM3);
+  timer->setOverflow(1000, MICROSEC_FORMAT);
+  timer->attachInterrupt(onTimer);
+  timer->resume();
+
+  eventFlags.loadCalibrationRequest = true;
+  eventFlags.settingsChanged = true;
 }
 
 void loop() {
+  uint32_t now = globalTickMs;
+  for (uint8_t i = 0; i < INTERRUPT_COUNT; i++) {
+    GenericUtils::updateInterrupt(*interruptList[i], now);
+  }
+
   // Timer was triggered
-  if (readIMU > 0) {
-    GenericUtils::handleInterrupt(&readIMU, IMUDriver::MAX_INTERRUPTS);
+  if (IMUInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&IMUInterrupt.pendingTriggers, IMUDriver::MAX_INTERRUPTS);
     imuDriver.readData();
     imuDriver.logData();
+  }
 
-    // TODO buď jiná proměnná (místo readIMU) nebo přejmenovat a dát vše sem -> MAX_INTERRUPTS dát jinam než do IMUDriver
+  if (baroInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&baroInterrupt.pendingTriggers, Barometer::MAX_INTERRUPTS);
     barometer.readData();
     barometer.logData();
   }
 
+  if (splitInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&splitInterrupt.pendingTriggers, 1);
+    SdReader::switchFile();
+  }
+
+  if (fusionInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&fusionInterrupt.pendingTriggers, 1);
+    motionFusion.update();
+  }
+
+  if (accelInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&accelInterrupt.pendingTriggers, 1);
+    accelMagnitude.update();
+  }
+
+  if (vibrationInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&vibrationInterrupt.pendingTriggers, 1);
+    vibrationAnalyzer.update();
+  }
+
+
   gps.readData();
-  
-  TimeUtils::resyncTime();
+  gps.parseData();
+
+
+  if (gps.hasUpdatedData() && gps.isValid()) {
+    TimeUtils::syncFromGPS(gps.getSample());
+  }
+
+  if (displayInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&displayInterrupt.pendingTriggers, 1);
+    displayCommunication.update();
+  }
+
+  handleEvents();
+}
+
+
+void handleEvents() {
+  if (eventFlags.loadCalibrationRequest) {
+    FloatTuple3 gyroShift;
+    if (NextionUtils::getCalibrationSettings(gyroShift)) {
+      Settings::setGyroShift(gyroShift.x, gyroShift.y, gyroShift.z);
+      Logger::log(LOG_INFO, "Calibration settings loaded from Nextion display");
+    } else {
+      Logger::log(LOG_ERROR, "Failed to get calibration settings from Nextion display");
+    }
+
+    eventFlags.loadCalibrationRequest = false;
+  }
+
+  if (eventFlags.settingsChanged) {
+    ImpactThresholdLevel impact;
+    SegmentDurationLevel segment;
+    if (NextionUtils::getImpactAndSegment(impact, segment)) {
+      Settings::setImpactAndSegment(impact, segment);
+      vibrationAnalyzer.setImpactThresholdLevel(impact);
+      splitInterrupt.periodTicks = GenericUtils::getSegmentDurationMs(segment);
+      Logger::log(LOG_INFO, "Settings updated from Nextion display");
+    } else {
+      Logger::log(LOG_ERROR, "Failed to get updated settings from Nextion display");
+    }
+
+    eventFlags.settingsChanged = false;
+  }
+
+  if (eventFlags.timeChanged) {
+    DateTime updatedTime;
+    bool timeSync;
+    uint32_t timeZone;
+    if (NextionUtils::getTimeSettings(updatedTime, timeSync, timeZone)) {
+      TimeUtils::setTime(updatedTime);
+      Settings::setTimeSync(timeSync);
+      Settings::setTimeZone(timeZone);
+      SdReader::switchFile();
+      Logger::log(LOG_INFO, "Time updated from Nextion display");
+    } else {
+      Logger::log(LOG_ERROR, "Failed to get updated time from Nextion display");
+    }
+    eventFlags.timeChanged = false;
+  }
+
+  if (eventFlags.calibrationRequest) {
+    Logger::log(LOG_INFO, "Gyro calibration starting");
+    timer->pause();
+    imuDriver.calibrate();
+    timer->resume();
+    Logger::log(LOG_INFO, "Gyro calibration done");
+    eventFlags.calibrationRequest = false;
+  }
 }
