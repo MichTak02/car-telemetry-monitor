@@ -18,6 +18,9 @@ class SdReader {
         static char _fileTime[64];
         static StatusFlags* _statusFlags;
 
+        static constexpr uint32_t LOW_SPACE_THRESHOLD_BYTES = 10UL * 1024UL * 1024UL;
+        static constexpr char LOCK_SUFFIX[] = "LOCK.log";
+
     public:
         /**
          * @brief Initializes SD card module over SPI interface and creates log file
@@ -40,11 +43,19 @@ class SdReader {
 
         /**
          * @brief Writes data to a SD card
-         * 
+         *
          * @param data Data to be written
          * @return number of bytes written, 0 on failure
          */
         static size_t writeData(const char* data);
+
+        /**
+         * @brief Frees space by deleting the oldest non-locked log file
+         *        if free space on the SD card is below 10 MB
+         *
+         * @return true if a file was deleted, false otherwise
+         */
+        static bool cleanupIfLowSpace();
 };
 
 #endif

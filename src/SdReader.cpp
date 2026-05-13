@@ -30,6 +30,8 @@ bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
 
 bool SdReader::switchFile()
 {
+    cleanupIfLowSpace();
+    
     Logger::log(LOG_INFO, "Switching to new file");
     _file.close();
     _isLocked = false;
@@ -63,7 +65,6 @@ bool SdReader::lockFile()
         return true;
     }
 
-    _isLocked = true;
     _file.close();
 
     if (!_sd.rename(_path, _lockedPath)) {
@@ -83,6 +84,8 @@ bool SdReader::lockFile()
         return false;
     }
     Logger::log(LOG_INFO, "File locked");
+    
+    _isLocked = true;
     return true;
 
 }
@@ -99,4 +102,81 @@ size_t SdReader::writeData(const char* data)
     }
 
     return bytesWritten;
+}
+
+bool SdReader::cleanupIfLowSpace()
+{
+    if (_statusFlags == nullptr || !_statusFlags->sdCard) {
+        return false;
+    }
+
+    uint64_t freeBytes = (uint64_t) _sd.vol()->freeClusterCount()
+                       * (uint64_t) _sd.vol()->bytesPerCluster();
+
+    if (freeBytes >= LOW_SPACE_THRESHOLD_BYTES) {
+        return false;
+    }
+
+    Logger::log(LOG_INFO, "SD low on space, deleting oldest log");
+
+    File dir = _sd.open(_logDir, O_RDONLY);
+    if (!dir || !dir.isDir()) {
+        Logger::log(LOG_ERROR, "Could not open log directory");
+        return false;
+    }
+
+    // Extract current file name from path
+    const char* currentName = strrchr(_path, '/');
+    currentName = currentName ? currentName + 1 : _path;
+
+    char oldestName[32] = {0};
+    char entryName[32];
+    File entry;
+
+    // Find first file that is not locked and not the currently opened file
+    while (entry.openNext(&dir, O_RDONLY)) {
+        if (entry.isDir()) {
+            entry.close();
+            continue;
+        }
+
+        size_t len = entry.getName(entryName, sizeof(entryName));
+        entry.close();
+
+        if (len == 0) {
+            continue;
+        }
+
+        // Skip locked files
+        size_t suffixLen = sizeof(LOCK_SUFFIX) - 1;
+        if (len >= suffixLen && strcmp(entryName + len - suffixLen, LOCK_SUFFIX) == 0) {
+            continue;
+        }
+
+        // Skip the currently open log file
+        if (strcmp(entryName, currentName) == 0) {
+            continue;
+        }
+
+        strncpy(oldestName, entryName, sizeof(oldestName) - 1);
+        oldestName[sizeof(oldestName) - 1] = '\0';
+        break;
+    }
+    dir.close();
+
+    if (oldestName[0] == '\0') {
+        Logger::log(LOG_INFO, "No deletable log file found");
+        return false;
+    }
+
+    char fullPath[64];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", _logDir, oldestName);
+
+    if (!_sd.remove(fullPath)) {
+        Logger::log(LOG_ERROR, "Failed to delete old log file");
+        return false;
+    }
+
+    Logger::log(LOG_INFO, "Deleted old log file");
+    return true;
 }
