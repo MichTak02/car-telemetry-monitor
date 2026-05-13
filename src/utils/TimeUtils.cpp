@@ -1,41 +1,36 @@
 #include "TimeUtils.h"
-
-#include <RTClib.h>
+#include "NextionUtils.h"
+#include "../SdReader.h"
 
 char TimeUtils::TIME_FORMAT[] = "YYYY-MM-DDThh:mm:ss";
 char TimeUtils::DASHED_TIME_FORMAT[] = "YYYY-MM-DDThh-mm-ss";
 char TimeUtils::PRECISE_TIME_FORMAT[] = "YYYY-MM-DDThh:mm:ss.XXX";
 
-uint8_t TimeUtils::lastSecond;
 uint32_t TimeUtils::baseMillis;
 uint32_t TimeUtils::baseUnix;
 
-RTC_DS1307 TimeUtils::_rtc;
-
 void TimeUtils::init()
 {
-    if (!_rtc.begin()) {
-        // TODO vymyslet co při failu
-        Serial.println("Couldn't find RTC");
-        //while (1);
+    DateTime initTime;
+    bool timeSync = false;
+    uint32_t timeZone = 0;
+    if (NextionUtils::getTimeSettings(initTime, timeSync, timeZone))
+    {
+        Settings::setTimeZone(timeZone);
     }
-
-    // TODO pouze když se nenačte
-    if (true) {
-        Serial.println("RTC lost power, setting time to compile time");
-        _rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    else
+    {
+        initTime = DateTime(F(__DATE__), F(__TIME__));
+        Logger::log(LOG_ERROR, "Failed to get time from Nextion display, using compile time");
     }
-    
-    DateTime time = _rtc.now();
+    baseUnix = initTime.unixtime();
     baseMillis = millis();
-
-    baseUnix = time.unixtime();
-    lastSecond = time.second();
 }
 
 DateTime TimeUtils::getTime()
 {
-    return _rtc.now();
+    uint32_t elapsedSec = (millis() - baseMillis) / 1000;
+    return DateTime(baseUnix + elapsedSec);
 }
 
 void TimeUtils::getTimeStr(char *buff)
@@ -52,7 +47,14 @@ void TimeUtils::getTimeStrDashed(char *buff)
 
 void TimeUtils::setTime(DateTime dateTime)
 {
-    _rtc.adjust(dateTime);
+    baseUnix = dateTime.unixtime();
+    baseMillis = millis();
+}
+
+void TimeUtils::setTime(PreciseDateTime preciseTime)
+{
+    baseUnix = preciseTime.unixTime;
+    baseMillis = millis() - preciseTime.milliseconds;
 }
 
 void TimeUtils::getPreciseTimeStr(char *buff)
@@ -65,11 +67,10 @@ PreciseDateTime TimeUtils::getPreciseTime()
 {
     uint32_t nowMillis = millis();
     uint32_t elapsedSinceResync = nowMillis - baseMillis;
-    
+
     return {
         baseUnix + (elapsedSinceResync / 1000),
-        uint16_t (elapsedSinceResync % 1000)
-    };
+        uint16_t(elapsedSinceResync % 1000)};
 }
 
 void TimeUtils::convertPreciseTimeStr(PreciseDateTime preciseTime, char *buff)
@@ -77,20 +78,39 @@ void TimeUtils::convertPreciseTimeStr(PreciseDateTime preciseTime, char *buff)
     strcpy(buff, PRECISE_TIME_FORMAT);
     DateTime dateTime = DateTime(preciseTime.unixTime);
     dateTime.toString(buff);
-        
+
     char *millisPos = strstr(buff, "XXX");
-    
+
     sprintf(millisPos, "%03d", preciseTime.milliseconds);
 }
 
-void TimeUtils::resyncTime()
+PreciseDateTime TimeUtils::fromGPSTime(uint16_t year, uint8_t month, uint8_t day,
+                                       uint8_t hour, uint8_t minute, uint8_t second,
+                                       uint8_t centisecond, uint32_t ageMs)
 {
-    DateTime now = getTime();
+    DateTime dt(year, month, day, hour, minute, second);
+    uint32_t totalMs = centisecond * 10u + ageMs;
+    return {
+        dt.unixtime() + (totalMs / 1000) + Settings::getCurrent().timeZone * 3600,
+        (uint16_t)(totalMs % 1000)};
+}
 
-    if (now.second() != lastSecond) {
-        lastSecond = now.second();
-        baseUnix = now.unixtime();
-        baseMillis = millis();
+void TimeUtils::syncFromGPS(const GPSSample& sample)
+{
+    if (!Settings::getCurrent().timeSync) {
+        return;
     }
 
+    PreciseDateTime internal = getPreciseTime();
+    uint32_t diffSec = (sample.gpsTime.unixTime > internal.unixTime)
+        ? sample.gpsTime.unixTime - internal.unixTime
+        : internal.unixTime - sample.gpsTime.unixTime;
+
+    if (diffSec <= SYNC_THRESHOLD_SEC) {
+        return;
+    }
+
+    setTime(sample.gpsTime);
+    Logger::log(LOG_INFO, "Time synced from GPS");
+    SdReader::switchFile();
 }

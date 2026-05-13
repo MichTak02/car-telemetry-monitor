@@ -4,12 +4,13 @@
 #include <Arduino.h>
 #include <RTClib.h>
 #include "definitions.h"
+#include "Settings.h"
+#include "Logger.h"
 
 
 class TimeUtils {
     private:
-        static RTC_DS1307 _rtc;
-        static uint8_t lastSecond;
+        static constexpr uint32_t SYNC_THRESHOLD_SEC = 10;
         static uint32_t baseMillis;
         static uint32_t baseUnix;
 
@@ -61,9 +62,37 @@ class TimeUtils {
          * @param buff char buffer to save string to
          */
         static void convertPreciseTimeStr(PreciseDateTime preciseTime, char* buff);
-        static void resyncTime();
 
         static void setTime(DateTime dateTime);
+        static void setTime(PreciseDateTime preciseTime);
+
+        /**
+         * @brief Sync internal time from a GPS sample when drift exceeds threshold
+         *
+         *
+         * @param sample GPS sample with a valid gpsTime field
+         */
+        static void syncFromGPS(const GPSSample& sample);
+
+        /**
+         * @brief Build a PreciseDateTime from raw GPS date/time fields and time zone
+         *
+         * Combines the satellite-reported fix time with the elapsed time since
+         * the fix (ageMs) to produce a value representing "now" in GPS-derived UTC
+         *
+         * @param year  4-digit year from GPS
+         * @param month month (1–12)
+         * @param day   day (1–31)
+         * @param hour  hour (0–23)
+         * @param minute minute (0–59)
+         * @param second second (0–59)
+         * @param centisecond sub-second from GPS (0–99, 10 ms resolution)
+         * @param ageMs milliseconds elapsed since the fix was received
+         * @return PreciseDateTime adjusted to "now" using GPS-derived UTC
+         */
+        static PreciseDateTime fromGPSTime(uint16_t year, uint8_t month, uint8_t day,
+                                           uint8_t hour, uint8_t minute, uint8_t second,
+                                           uint8_t centisecond, uint32_t ageMs);
 };
 
 #endif
