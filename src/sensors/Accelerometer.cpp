@@ -5,18 +5,26 @@ void Accelerometer::setValues(FloatTuple3 accelValues)
     _rawValues = accelValues;
 }
 
-FloatTuple3 Accelerometer::getValues(Unit unit)
+FloatTuple3 Accelerometer::getValues(Unit unit, bool calibrated)
 {
+    FloatTuple3 values = _rawValues;
+
+    if (calibrated) {
+        values.x -= _offset.x;
+        values.y -= _offset.y;
+        values.z -= _offset.z;
+    }
+
     switch (unit)
     {
     case UNIT_MS2:
-        return _rawValues;
+        return values;
     
     case UNIT_G:
         return {
-                _rawValues.x * SENSORS_MS2_TO_G,
-                _rawValues.y * SENSORS_MS2_TO_G,
-                _rawValues.z * SENSORS_MS2_TO_G,
+                values.x * SENSORS_MS2_TO_G,
+                values.y * SENSORS_MS2_TO_G,
+                values.z * SENSORS_MS2_TO_G,
             };
 
     default:

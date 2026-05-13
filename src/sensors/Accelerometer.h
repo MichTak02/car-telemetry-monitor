@@ -14,6 +14,7 @@
 class Accelerometer {
     private:
         FloatTuple3 _rawValues;
+        const FloatTuple3 _offset = {0.0f, 0.0f, 0.0f};
     public:
         static const Unit DEFAULT_UNIT = UNIT_MS2;
 
@@ -28,9 +29,10 @@ class Accelerometer {
          * @brief Returns lastly set values in given unit
          * 
          * @param unit unit of returned value, in case of invalid unit, default one is used and operation is logged
+         * @param calibrated true for calibrated values, false for raw values
          * @return values in given unit
          */
-        FloatTuple3 getValues(Unit unit = DEFAULT_UNIT);
+        FloatTuple3 getValues(Unit unit = DEFAULT_UNIT, bool calibrated = false);
 };
 
 #endif

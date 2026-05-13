@@ -9,7 +9,6 @@
 class Gyroscope {
     private:
         FloatTuple3 _rawValues;
-        FloatTuple3 _shift = {10.4, 0, -0.6};
         FloatTuple3 _calibratedValues;
 
     public:
@@ -26,9 +25,10 @@ class Gyroscope {
          * @brief Returns lastly set values in given unit
          * 
          * @param unit unit of returned value, in case of invalid unit, default one is used and operation is logged
+         * @param calibrated true for calibrated values, false for raw values
          * @return values in given unit 
          */
-        FloatTuple3 getValues(Unit unit = DEFAULT_UNIT);
+        FloatTuple3 getValues(Unit unit = DEFAULT_UNIT, bool calibrated = false);
 };
 
 #endif

@@ -7,19 +7,26 @@
 #include <Adafruit_Sensor.h>
 #include "Accelerometer.h"
 #include "Gyroscope.h"
+#include "Magnetometer.h"
 #include "definitions.h"
 #include "utils/TimeUtils.h"
 
 class IMUDriver {
     private:
+        static constexpr uint32_t CALIBRATION_DURATION_MS = 3000;
+        static constexpr uint32_t CALIBRATION_SAMPLE_INTERVAL_MS = 5;
         const byte I2C_ADDRESS = 0x69;
+        StatusFlags& _statusFlags;
         Adafruit_MPU6050 _mpu;
         Accelerometer _accelerometer;
         Gyroscope _gyroscope;
+        Magnetometer _magnetometer;
         PreciseDateTime _timestamp;
  
     public:
         static const uint8_t MAX_INTERRUPTS = 5;
+
+        IMUDriver(StatusFlags& statusFlags) : _statusFlags(statusFlags), _magnetometer(statusFlags) {}
         
         /**
          * @brief Initializes MPU6050 sensor
@@ -33,9 +40,10 @@ class IMUDriver {
          * 
          * @param accelData reference to accelerometer data object
          * @param gyroData reference to gyroscope data object
+         * @param magData reference to magnetometer data object
          * @param temp reference to temperature variable
          */
-        void readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp);
+        void readData(FloatTuple3& accelData, FloatTuple3& gyroData, FloatTuple3& magData, float& temp);
         
         /**
          * @brief Reads data from MPU6050 sensor and saves them into sensors objects
@@ -49,14 +57,28 @@ class IMUDriver {
          * @param accelUnit accelerometer unit
          * @param gyroUnit gyroscope unit
          * @param magUnit magnetometer unit
+         * @param calibrated true for calibrated values, false for raw values
          * @return IMUSample 
          */
-        IMUSample getIMUSample(Unit accelUnit = UNIT_MS2, Unit gyroUnit = UNIT_RAD_S, Unit magUnit = UNIT_MICROTESLA);
+        IMUSample getIMUSample(Unit accelUnit = UNIT_MS2, Unit gyroUnit = UNIT_RAD_S, Unit magUnit = UNIT_MICROTESLA, bool calibrated = false);
         
+        /**
+         * @brief Overload for getIMUSample with default units, only calibrated parameter
+         * 
+         * @param calibrated true for calibrated values, false for raw values
+         * @return IMUSample 
+         */
+        IMUSample getIMUSample(bool calibrated);
+
         /**
          * @brief Logs measured data into SD card
          */
         void logData();
+
+        /**
+         * @brief Calibrate gyroscope bias by averaging readings while stationary
+         */
+        void calibrate();
 };
 
 #endif
