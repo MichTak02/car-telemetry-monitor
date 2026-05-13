@@ -12,16 +12,20 @@ class Barometer {
     private:
         const byte I2C_ADDRESS = 0x76;
         Adafruit_BMP280 _bmp;
+        StatusFlags& _statusFlags;
         float _rawValue;
         PreciseDateTime _timestamp;
         float _temp;
 
-        float ringBuff[RING_BUFF_LEN];
+        float ringBuff[RING_BUFF_MAX_LEN];
         uint8_t counter = 0;
         bool overflow = 0;
 
     public:
         static const Unit DEFAULT_UNIT = UNIT_PA;
+        static const uint8_t MAX_INTERRUPTS = 1;
+
+        Barometer(StatusFlags& statusFlags) : _statusFlags(statusFlags) {}
 
         /**
          * @brief Initializes barometer module

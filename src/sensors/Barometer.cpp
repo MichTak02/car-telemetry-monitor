@@ -2,12 +2,9 @@
 
 bool Barometer::init()
 {
-    if (!_bmp.begin(I2C_ADDRESS)) {
-        return false;
-    }
-    return true;
+    _statusFlags.barometer = _bmp.begin(I2C_ADDRESS);
+    return _statusFlags.barometer;
 }
-
 
 void Barometer::readData()
 {
