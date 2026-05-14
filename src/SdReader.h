@@ -56,6 +56,28 @@ class SdReader {
          * @return true if a file was deleted, false otherwise
          */
         static bool cleanupIfLowSpace();
+
+        /**
+         * @brief Write log filenames to out, one per line, ending with "END\n"
+         * Skips the active log and, when lockedOnly is true, skips non-locked files
+         */
+        static void sendFileNamesToSerial(Stream& out, bool lockedOnly);
+
+        /**
+         * @brief Sends the content of logs/<filename> to out followed by "END\n"
+         * Returns false if the file does not exist or is the active log
+         */
+        static bool sendFile(Stream& out, const char* filename);
+
+        /**
+         * @brief Returns true if filename matches the currently-open log file
+         */
+        static bool isActiveLogPath(const char* filename);
+
+        /**
+         * @brief Returns the file size of logs/<filename> in bytes, or 0 if missing
+         */
+        static uint32_t getFileSize(const char* filename);
 };
 
 #endif

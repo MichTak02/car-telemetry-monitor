@@ -1,4 +1,5 @@
 #include "utils/NextionUtils.h"
+#include "NextionUtils.h"
 
 EasyNex* NextionUtils::_nex = nullptr;
 

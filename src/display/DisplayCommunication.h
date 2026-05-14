@@ -11,7 +11,9 @@
 #include "screens/IdleScreen.h"
 #include "screens/StatusScreen.h"
 #include "screens/CalibrationScreen.h"
+#include "screens/BluetoothScreen.h"
 
+#include "Bluetooth.h"
 #include "processing/SpeedGetter.h"
 #include "processing/VibrationAnalyzer.h"
 #include "processing/AltitudeFusion.h"
@@ -35,12 +37,13 @@ class DisplayCommunication {
         IdleScreen _idleScreen;
         StatusScreen _statusScreen;
         CalibrationScreen _calibrationScreen;
+        BluetoothScreen _bluetoothScreen;
         GenericScreen* _currentScreen = nullptr;
         uint32_t _totalTicks = 0;
 
         void handlePageChange();
     public:
-        DisplayCommunication(EasyNex& nex, SpeedGetter& speedGetter, AccelerationMagnitude& accelMagnitude, VibrationAnalyzer& vibrationAnalyzer, AltitudeFusion& altitudeFusion, MotionFusion& orientationFusion, StatusFlags& statusFlags)
+        DisplayCommunication(EasyNex& nex, SpeedGetter& speedGetter, AccelerationMagnitude& accelMagnitude, VibrationAnalyzer& vibrationAnalyzer, AltitudeFusion& altitudeFusion, MotionFusion& orientationFusion, StatusFlags& statusFlags, Bluetooth& bluetooth)
             : _nex(nex),
               _speedGetter(speedGetter),
               _accelMagnitude(accelMagnitude),
@@ -53,7 +56,8 @@ class DisplayCommunication {
               _orientationScreen(_nex, _orientationFusion),
               _idleScreen(_nex),
               _statusScreen(_nex, statusFlags),
-              _calibrationScreen(_nex) {
+              _calibrationScreen(_nex),
+              _bluetoothScreen(_nex, bluetooth) {
         };
 
         void update();

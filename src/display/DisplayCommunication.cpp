@@ -65,6 +65,12 @@ void DisplayCommunication::handlePageChange()
             break;
         }
 
+        case BLUETOOTH_SCREEN: {
+            _bluetoothScreen.init();
+            _currentScreen = &_bluetoothScreen;
+            break;
+        }
+
         case CALIBRATION_SCREEN: {
             _calibrationScreen.init();
             _currentScreen = &_calibrationScreen;

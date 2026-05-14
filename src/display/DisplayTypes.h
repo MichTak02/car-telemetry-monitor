@@ -9,6 +9,7 @@ enum ScreenType {
     ALTITUDE_SCREEN = 2,
     ORIENTATION_SCREEN = 3,
     STATUS_SCREEN = 6,
+    BLUETOOTH_SCREEN = 7,
     CALIBRATION_SCREEN = 10
 };
 

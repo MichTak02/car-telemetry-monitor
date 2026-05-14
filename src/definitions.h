@@ -52,6 +52,13 @@ enum SegmentDurationLevel {
     SEGMENT_DURATION_LONG
 };
 
+enum TransferStatus {
+    TRANSFER_FAILED = -1,
+    TRANSFER_IDLE = 0,
+    TRANSFER_IN_PROGRESS = 1,
+    TRANSFER_DONE = 2
+};
+
 struct AccelerometerData {
     float ax;
     float ay;
@@ -100,6 +107,12 @@ struct GPSSample {
 struct FloatSample {
     float value;
     PreciseDateTime timestamp;
+};
+
+struct TransferInfo {
+    char filename[64];
+    uint32_t fileSize;
+    TransferStatus status;
 };
 
 struct InterruptStruct {

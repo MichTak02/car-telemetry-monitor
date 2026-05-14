@@ -180,3 +180,91 @@ bool SdReader::cleanupIfLowSpace()
     Logger::log(LOG_INFO, "Deleted old log file");
     return true;
 }
+
+bool SdReader::isActiveLogPath(const char* filename)
+{
+    const char* activePath = _isLocked ? _lockedPath : _path;
+    const char* activeName = strrchr(activePath, '/');
+    activeName = activeName ? activeName + 1 : activePath;
+    return strcmp(filename, activeName) == 0;
+}
+
+void SdReader::sendFileNamesToSerial(Stream& out, bool lockedOnly)
+{
+    _file.sync();
+
+    File dir = _sd.open(_logDir, O_RDONLY);
+    if (!dir || !dir.isDir()) {
+        out.print("END\n");
+        return;
+    }
+
+    char entryName[64];
+    File entry;
+
+    while (entry.openNext(&dir, O_RDONLY)) {
+        if (entry.isDir()) {
+            entry.close();
+            continue;
+        }
+
+        size_t len = entry.getName(entryName, sizeof(entryName));
+        entry.close();
+
+        if (len == 0 || isActiveLogPath(entryName)) {
+            continue;
+        }
+
+        if (lockedOnly) {
+            size_t suffixLen = sizeof(LOCK_SUFFIX) - 1;
+            if (len < suffixLen || strcmp(entryName + len - suffixLen, LOCK_SUFFIX) != 0) {
+                continue;
+            }
+        }
+
+        out.print(entryName);
+        out.print('\n');
+    }
+
+    dir.close();
+    out.print("END\n");
+}
+
+bool SdReader::sendFile(Stream& out, const char* filename)
+{
+    if (isActiveLogPath(filename)) {
+        return false;
+    }
+
+    char fullPath[80];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", _logDir, filename);
+
+    File file = _sd.open(fullPath, O_READ);
+    if (!file) {
+        return false;
+    }
+
+    uint8_t buf[64];
+    int n;
+    while ((n = file.read(buf, sizeof(buf))) > 0) {
+        out.write(buf, (size_t)n);
+    }
+
+    file.close();
+    out.print("\nEND\n");
+    return true;
+}
+
+uint32_t SdReader::getFileSize(const char* filename)
+{
+    char fullPath[80];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", _logDir, filename);
+
+    File file = _sd.open(fullPath, O_READ);
+    if (!file) {
+        return 0;
+    }
+    uint32_t size = file.fileSize();
+    file.close();
+    return size;
+}

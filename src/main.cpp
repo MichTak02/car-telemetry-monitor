@@ -21,14 +21,24 @@
 #include "display/DisplayCommunication.h"
 #include "definitions.h"
 #include "Settings.h"
+#include "Bluetooth.h"
 
 #define CS_PIN PA4
+#define BLUETOOTH_RX_PIN PB7
+#define BLUETOOTH_TX_PIN PB6
+#define BLUETOOTH_BAUD 115200
+#define NEXTION_RX_PIN PB11
+#define NEXTION_TX_PIN PB10
+#define NEXTION_BAUD 115200
 
 void handleEvents();
 
 // Nextion display
-HardwareSerial NextionSerial(PB11, PB10); // RX, TX
+HardwareSerial NextionSerial(NEXTION_RX_PIN, NEXTION_TX_PIN);
 EasyNex nex = EasyNex(NextionSerial);
+
+// HC-06 Bluetooth
+HardwareSerial BluetoothSerial(BLUETOOTH_RX_PIN, BLUETOOTH_TX_PIN);
 
 // Timers
 HardwareTimer *timer = nullptr;
@@ -70,6 +80,8 @@ SpeedGetter speedGetter = SpeedGetter(gps);
 AltitudeFusion altitudeFusion = AltitudeFusion(gps, barometer);
 AccelerationMagnitude accelMagnitude = AccelerationMagnitude(imuDriver);
 
+Bluetooth bluetooth(BluetoothSerial, statusFlags);
+
 DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationAnalyzer, altitudeFusion, motionFusion, statusFlags);
 
 void onTimer() {
@@ -105,6 +117,8 @@ void setup() {
   timer->setOverflow(1000, MICROSEC_FORMAT);
   timer->attachInterrupt(onTimer);
   timer->resume();
+
+  bluetooth.init(BLUETOOTH_BAUD, timer);
 
   eventFlags.loadCalibrationRequest = true;
   eventFlags.settingsChanged = true;
@@ -152,6 +166,7 @@ void loop() {
 
   gps.readData();
   gps.parseData();
+  bluetooth.update();
 
 
   if (gps.hasUpdatedData() && gps.isValid()) {
