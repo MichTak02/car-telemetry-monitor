@@ -24,9 +24,6 @@
 #include "Bluetooth.h"
 
 #define CS_PIN PA4
-#define BLUETOOTH_RX_PIN PB7
-#define BLUETOOTH_TX_PIN PB6
-#define BLUETOOTH_BAUD 115200
 #define NEXTION_RX_PIN PB11
 #define NEXTION_TX_PIN PB10
 #define NEXTION_BAUD 115200
@@ -36,9 +33,6 @@ void handleEvents();
 // Nextion display
 HardwareSerial NextionSerial(NEXTION_RX_PIN, NEXTION_TX_PIN);
 EasyNex nex = EasyNex(NextionSerial);
-
-// HC-06 Bluetooth
-HardwareSerial BluetoothSerial(BLUETOOTH_RX_PIN, BLUETOOTH_TX_PIN);
 
 // Timers
 HardwareTimer *timer = nullptr;
@@ -80,9 +74,13 @@ SpeedGetter speedGetter = SpeedGetter(gps);
 AltitudeFusion altitudeFusion = AltitudeFusion(gps, barometer);
 AccelerationMagnitude accelMagnitude = AccelerationMagnitude(imuDriver);
 
-Bluetooth bluetooth(BluetoothSerial, statusFlags);
+Bluetooth bluetooth(statusFlags);
 
-DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationAnalyzer, altitudeFusion, motionFusion, statusFlags);
+DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationAnalyzer, altitudeFusion, motionFusion, statusFlags, bluetooth);
+
+
+// TODO smazat
+void listDir(const char* path);
 
 void onTimer() {
   globalTickMs++;

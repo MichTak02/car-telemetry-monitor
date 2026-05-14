@@ -5,13 +5,13 @@
 #include <HardwareTimer.h>
 #include "definitions.h"
 
-#define BLUETOOTH_RX_PIN PA10
-#define BLUETOOTH_TX_PIN PA9
-#define BLUETOOTH_BAUD 115200
-
 class Bluetooth {
 private:
-    HardwareSerial& _serial;
+    static constexpr uint32_t _rxPin = PB7;
+    static constexpr uint32_t _txPin = PB6;
+    static constexpr uint32_t _baud = 115200;
+
+    HardwareSerial _serial;
     HardwareTimer* _timer;
     StatusFlags* _statusFlags;
     char _lineBuf[80];
@@ -23,15 +23,12 @@ private:
     void _sendErr(const char* code);
 
 public:
-    /**
-     * @brief Constructor with a HardwareSerial bound to the HC-06 pins and StatusFlags ref
-     */
-    Bluetooth(HardwareSerial& serial, StatusFlags& flags);
+    Bluetooth(StatusFlags& flags);
 
     /**
-     * @brief Begin the serial at given baud and store the timer for pause/resume
+     * @brief Begin the serial and store the timer for pause/resume
      */
-    void init(uint32_t baud, HardwareTimer* timer);
+    void init(HardwareTimer* timer);
 
     /**
      * @brief Allow command processing. Resets the line buffer

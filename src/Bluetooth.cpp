@@ -1,8 +1,8 @@
 #include "Bluetooth.h"
 #include "SdReader.h"
 
-Bluetooth::Bluetooth(HardwareSerial& serial, StatusFlags& flags)
-    : _serial(serial),
+Bluetooth::Bluetooth(StatusFlags& flags)
+    : _serial(_rxPin, _txPin),
       _timer(nullptr),
       _statusFlags(&flags),
       _lineLen(0),
@@ -13,10 +13,10 @@ Bluetooth::Bluetooth(HardwareSerial& serial, StatusFlags& flags)
     _transferInfo.status = TRANSFER_IDLE;
 }
 
-void Bluetooth::init(uint32_t baud, HardwareTimer* timer)
+void Bluetooth::init(HardwareTimer* timer)
 {
     _timer = timer;
-    _serial.begin(baud);
+    _serial.begin(_baud);
     _statusFlags->bluetooth = true;
 }
 
