@@ -4,6 +4,7 @@
 
 char Logger::lastErrorMsg[] = {0};
 bool Logger::updatedLastErrorMsg = false;
+StatusFlags* Logger::_statusFlags = nullptr;
 
 void Logger::log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType, const char *msg)
 {
@@ -19,6 +20,11 @@ void Logger::log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType,
         updatedLastErrorMsg = true;
         strncpy(lastErrorMsg, msg, sizeof(lastErrorMsg) - 1);
         lastErrorMsg[sizeof(lastErrorMsg) - 1] = '\0'; // Ensure null-termination
+    }
+
+    if (_statusFlags != nullptr && !_statusFlags->sdCard) {
+        Serial1.println(buff);
+        return;
     }
 
     SdReader::writeData(buff);
@@ -45,6 +51,11 @@ void Logger::log(LogLevel logLevel, SensorType sensorType, const char *msg)
     log(preciseTime, logLevel, NO_SENSOR, msg);
 }
 
+void Logger::init(StatusFlags &statusFlags)
+{
+    _statusFlags = &statusFlags;
+}
+
 void Logger::log(LogLevel logLevel, const char *msg)
 {
     log(logLevel, NO_SENSOR, msg);
@@ -59,15 +70,12 @@ void Logger::logIMUSample(IMUSample sample)
         sample.accel.z,
         sample.gyro.x,
         sample.gyro.y,
-        sample.gyro.z,
-        sample.mag.x,
-        sample.mag.y,
-        sample.mag.z
+        sample.gyro.z
     };
 
     const char delim = ',';
-    
-    GenericUtils::floatsToStr(values, 9, delim, msg);
+
+    GenericUtils::floatsToStr(values, 6, delim, msg);
     log(sample.timestamp, LOG_DATA, SENSOR_IMU, msg);
 }
 

@@ -93,8 +93,8 @@ void setup() {
 
   nex.begin(115200);
 
+  Logger::init(statusFlags);
   NextionUtils::init(nex);
-
   TimeUtils::init();
 
   if (!SdReader::init(CS_PIN, statusFlags)) {
@@ -116,7 +116,7 @@ void setup() {
   timer->attachInterrupt(onTimer);
   timer->resume();
 
-  bluetooth.init(BLUETOOTH_BAUD, timer);
+  bluetooth.init(timer);
 
   eventFlags.loadCalibrationRequest = true;
   eventFlags.settingsChanged = true;

@@ -9,7 +9,6 @@ class StatusScreen : public GenericScreen {
     private:
         static constexpr char GPS_STATUS_FIELD[] = "gpsTr.val";
         static constexpr char IMU_STATUS_FIELD[] = "imuTr.val";
-        static constexpr char MAG_STATUS_FIELD[] = "magTr.val";
         static constexpr char BARO_STATUS_FIELD[] = "baroTr.val";
         static constexpr char SD_STATUS_FIELD[] = "sdTr.val";
         static constexpr char BT_STATUS_FIELD[] = "btTr.val";

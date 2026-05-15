@@ -24,4 +24,4 @@ class AltitudeScreen : public GenericScreen {
         void disableProcessing() override;
 };
 
-#endif // ALTITUDE_SCREEN_H
+#endif

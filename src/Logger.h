@@ -11,8 +11,11 @@ class Logger {
     private:
         static char lastErrorMsg[128];
         static bool updatedLastErrorMsg;
+        static StatusFlags* _statusFlags;
     
     public:
+        static void init(StatusFlags& statusFlags);
+
         /**
          * @brief Logs message to SD card
          * 
@@ -48,8 +51,8 @@ class Logger {
         static void logPressure(FloatSample pressureSample);
         
         /**
-         * @brief Logs measurment from IMU sensors (accelerometer, gyroscope, magnetometer)
-         * 
+         * @brief Logs measurement from IMU sensors (accelerometer, gyroscope)
+         *
          * @param sample sample from IMU sensors
          */
         static void logIMUSample(IMUSample sample);

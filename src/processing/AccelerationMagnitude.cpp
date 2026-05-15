@@ -16,7 +16,7 @@ void AccelerationMagnitude::update()
     if (!_enabled) {
         return;
     }
-    IMUSample sample = _imuDriver.getIMUSample(Accelerometer::DEFAULT_UNIT, UNIT_DEG_S, Magnetometer::DEFAULT_UNIT, true);
+    IMUSample sample = _imuDriver.getIMUSample(Accelerometer::DEFAULT_UNIT, UNIT_DEG_S, true);
 
     float ax = sample.accel.x;
     float ay = sample.accel.y;

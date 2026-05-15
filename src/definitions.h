@@ -5,7 +5,6 @@
 #define RING_BUFF_MAX_LEN 512
 
 #define SENSORS_MS2_TO_G (0.10197162129779283F)
-#define SENSORS_MICROTESLA_TO_GAUSS (0.01F)
 
 #include <Arduino.h>
 
@@ -13,7 +12,6 @@ enum SensorType {
     NO_SENSOR = -1,
     SENSOR_ACCELEROMETER = 0,
     SENSOR_GYROSCOPE,
-    SENSOR_MAGNETOMETER,
     SENSOR_IMU,
     SENSOR_BAROMETER,
     SENSOR_GPS
@@ -33,8 +31,6 @@ enum Unit {
     UNIT_RAD_S,
     UNIT_CELSIUS,
     UNIT_FAHRENHEIT,
-    UNIT_MICROTESLA,
-    UNIT_GAUSS,
     UNIT_PA,
     UNIT_HPA,
     UNIT_METER
@@ -89,8 +85,6 @@ struct PreciseDateTime {
 struct IMUSample {
     FloatTuple3 accel;
     FloatTuple3 gyro;
-    FloatTuple3 mag;
-    bool hasMag;
     PreciseDateTime timestamp;
 };
 
@@ -131,7 +125,6 @@ struct InterruptStruct {
 struct StatusFlags {
     bool gps;
     bool imu;
-    bool magnetometer;
     bool barometer;
     bool sdCard;
     bool bluetooth;

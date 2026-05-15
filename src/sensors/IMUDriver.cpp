@@ -13,11 +13,7 @@ bool IMUDriver::init()
         return false;
     }
 
-    if (!_magnetometer.init()) {
-        Logger::log(LOG_ERROR, SENSOR_MAGNETOMETER, "Could not initialize magnetometer");
-        return false;
-    }
-
+    // TODO zjistit co dělá a přenastavit (zkopírováno z dřívějšího testování)
     _mpu.setHighPassFilter(MPU6050_HIGHPASS_DISABLE);
     _mpu.setMotionInterrupt(false);
     _mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
@@ -27,12 +23,11 @@ bool IMUDriver::init()
     return true;
 }
 
-void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, FloatTuple3& magData, float& temp)
+void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp)
 {
     /* Get new sensor events with the readings */
     sensors_event_t a, g, t;
     _mpu.getEvent(&a, &g, &t);
-    _magnetometer.readData();
 
     // m/s^2
     accelData = {
@@ -48,9 +43,6 @@ void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, FloatTup
         g.gyro.z
     };
 
-    // microtesla
-    magData = _magnetometer.getValue();
-
     temp = t.temperature;
 }
 
@@ -58,31 +50,28 @@ void IMUDriver::readData()
 {
     FloatTuple3 accel;
     FloatTuple3 gyro;
-    FloatTuple3 mag;
     float temp;
 
-    readData(accel, gyro, mag, temp);
+    readData(accel, gyro, temp);
     _timestamp = TimeUtils::getPreciseTime();
 
     _accelerometer.setValues(accel);
     _gyroscope.setValues(gyro);
 }
 
-IMUSample IMUDriver::getIMUSample(Unit accelUnit, Unit gyroUnit, Unit magUnit, bool calibrated)
+IMUSample IMUDriver::getIMUSample(Unit accelUnit, Unit gyroUnit, bool calibrated)
 {
     PreciseDateTime time = _timestamp;
     return {
         _accelerometer.getValues(accelUnit, calibrated),
         _gyroscope.getValues(gyroUnit, calibrated),
-        _magnetometer.getValue(magUnit, calibrated),
-        true,
         time
     };
 }
 
 IMUSample IMUDriver::getIMUSample(bool calibrated)
 {
-    return getIMUSample(UNIT_MS2, UNIT_RAD_S, UNIT_MICROTESLA, calibrated);
+    return getIMUSample(UNIT_MS2, UNIT_RAD_S, calibrated);
 }
 
 void IMUDriver::logData()

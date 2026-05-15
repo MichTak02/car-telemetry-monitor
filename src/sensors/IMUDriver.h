@@ -7,7 +7,6 @@
 #include <Adafruit_Sensor.h>
 #include "Accelerometer.h"
 #include "Gyroscope.h"
-#include "Magnetometer.h"
 #include "definitions.h"
 #include "utils/TimeUtils.h"
 
@@ -20,13 +19,12 @@ class IMUDriver {
         Adafruit_MPU6050 _mpu;
         Accelerometer _accelerometer;
         Gyroscope _gyroscope;
-        Magnetometer _magnetometer;
         PreciseDateTime _timestamp;
  
     public:
         static const uint8_t MAX_INTERRUPTS = 5;
 
-        IMUDriver(StatusFlags& statusFlags) : _statusFlags(statusFlags), _magnetometer(statusFlags) {}
+        IMUDriver(StatusFlags& statusFlags) : _statusFlags(statusFlags) {}
         
         /**
          * @brief Initializes MPU6050 sensor
@@ -37,13 +35,12 @@ class IMUDriver {
         
         /**
          * @brief Reads data from MPU6050 sensor and saves them into provided arguments
-         * 
+         *
          * @param accelData reference to accelerometer data object
          * @param gyroData reference to gyroscope data object
-         * @param magData reference to magnetometer data object
          * @param temp reference to temperature variable
          */
-        void readData(FloatTuple3& accelData, FloatTuple3& gyroData, FloatTuple3& magData, float& temp);
+        void readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp);
         
         /**
          * @brief Reads data from MPU6050 sensor and saves them into sensors objects
@@ -53,14 +50,13 @@ class IMUDriver {
 
         /**
          * @brief Gets measured IMU data as @p IMUSample
-         * 
+         *
          * @param accelUnit accelerometer unit
          * @param gyroUnit gyroscope unit
-         * @param magUnit magnetometer unit
          * @param calibrated true for calibrated values, false for raw values
-         * @return IMUSample 
+         * @return IMUSample
          */
-        IMUSample getIMUSample(Unit accelUnit = UNIT_MS2, Unit gyroUnit = UNIT_RAD_S, Unit magUnit = UNIT_MICROTESLA, bool calibrated = false);
+        IMUSample getIMUSample(Unit accelUnit = UNIT_MS2, Unit gyroUnit = UNIT_RAD_S, bool calibrated = false);
         
         /**
          * @brief Overload for getIMUSample with default units, only calibrated parameter

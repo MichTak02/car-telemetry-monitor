@@ -17,9 +17,9 @@ void MotionFusion::update()
     if (!_enabled) {
         return;
     }
-    IMUSample sample = _imuDriver.getIMUSample(Accelerometer::DEFAULT_UNIT, UNIT_DEG_S, Magnetometer::DEFAULT_UNIT, true);
+    IMUSample sample = _imuDriver.getIMUSample(Accelerometer::DEFAULT_UNIT, UNIT_DEG_S, true);
 
-    _fusion.update(sample.gyro.x, sample.gyro.y, sample.gyro.z, sample.accel.x, sample.accel.y, sample.accel.z, sample.mag.x, sample.mag.y, sample.mag.z);
+    _fusion.updateIMU(sample.gyro.x, sample.gyro.y, sample.gyro.z, sample.accel.x, sample.accel.y, sample.accel.z);
 }
 
 FloatTuple3 MotionFusion::getOrientation()
