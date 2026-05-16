@@ -13,7 +13,7 @@
 #include "sensors/GPS.h"
 #include "SdReader.h"
 #include "processing/MotionFusion.h"
-#include "processing/VibrationAnalyzer.h"
+#include "processing/VibrationMeter.h"
 #include "processing/SpeedGetter.h"
 #include "processing/AltitudeFusion.h"
 #include "processing/AccelerationMagnitude.h"
@@ -68,7 +68,7 @@ IMUDriver imuDriver = IMUDriver(statusFlags);
 GPS gps = GPS(statusFlags);
 
 MotionFusion motionFusion = MotionFusion(imuDriver);
-VibrationAnalyzer vibrationAnalyzer = VibrationAnalyzer(imuDriver, Settings::getCurrent().impactThresholdLevel);
+VibrationMeter vibrationMeter = VibrationMeter(imuDriver, Settings::getCurrent().impactThresholdLevel);
 SpeedGetter speedGetter = SpeedGetter(gps);
 
 AltitudeFusion altitudeFusion = AltitudeFusion(gps, barometer);
@@ -76,7 +76,7 @@ AccelerationMagnitude accelMagnitude = AccelerationMagnitude(imuDriver);
 
 Bluetooth bluetooth(statusFlags);
 
-DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationAnalyzer, altitudeFusion, motionFusion, statusFlags, bluetooth);
+DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationMeter, altitudeFusion, motionFusion, statusFlags, bluetooth);
 
 
 // TODO smazat
@@ -158,7 +158,8 @@ void loop() {
 
   if (vibrationInterrupt.pendingTriggers > 0) {
     GenericUtils::handleInterrupt(&vibrationInterrupt.pendingTriggers, 1);
-    vibrationAnalyzer.update();
+    vibrationMeter.update();
+    vibrationMeter.checkVibrationLevel();
   }
 
 
@@ -198,7 +199,7 @@ void handleEvents() {
     SegmentDurationLevel segment;
     if (NextionUtils::getImpactAndSegment(impact, segment)) {
       Settings::setImpactAndSegment(impact, segment);
-      vibrationAnalyzer.setImpactThresholdLevel(impact);
+      vibrationMeter.setImpactThresholdLevel(impact);
       splitInterrupt.periodTicks = GenericUtils::getSegmentDurationMs(segment);
       Logger::log(LOG_INFO, "Settings updated from Nextion display");
     } else {

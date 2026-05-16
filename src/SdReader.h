@@ -18,8 +18,14 @@ class SdReader {
         static char _fileTime[64];
         static StatusFlags* _statusFlags;
 
-        static constexpr uint32_t LOW_SPACE_THRESHOLD_BYTES = 10UL * 1024UL * 1024UL;
+        static constexpr uint32_t LOW_SPACE_THRESHOLD_BYTES = 10UL * 1024UL * 1024UL; // 10 MB
+        static constexpr uint32_t PREALLOC_SIZE = 2UL * 1024UL * 1024UL; // 2 MB
+        static constexpr uint32_t SYNC_INTERVAL_MS = 500;
+        static constexpr uint32_t LOCK_DELAY_MS = 500;
         static constexpr char LOCK_SUFFIX[] = "LOCK.log";
+
+        static uint32_t _lastSyncTime;
+        static uint32_t _lockRequestTime;
 
     public:
         /**
@@ -37,9 +43,13 @@ class SdReader {
 
         /**
          * @brief Renames current file by adding "LOCK" suffix to a file name
-         * 
          */
         static bool lockFile();
+
+        /**
+         * @brief Schedules a deferred lock after LOCK_DELAY_MS; call on impact detection
+         */
+        static void scheduleLock();
 
         /**
          * @brief Writes data to a SD card

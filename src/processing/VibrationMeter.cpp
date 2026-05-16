@@ -1,6 +1,6 @@
-#include "VibrationAnalyzer.h"
+#include "VibrationMeter.h"
 
-void VibrationAnalyzer::enable()
+void VibrationMeter::enable()
 {
     _vibrationLevel = 0.0f;
     ax_prev = 0.0f;
@@ -13,12 +13,12 @@ void VibrationAnalyzer::enable()
     _enabled = true;
 }
 
-void VibrationAnalyzer::disable()
+void VibrationMeter::disable()
 {
     _enabled = false;
 }
 
-void VibrationAnalyzer::update()
+void VibrationMeter::update()
 {
     if (!_enabled) {
         return;
@@ -37,12 +37,12 @@ void VibrationAnalyzer::update()
     _vibrationLevel = sqrt(ax_hp * ax_hp + ay_hp * ay_hp + az_hp * az_hp);
 }
 
-float VibrationAnalyzer::getVibrationLevel()
+float VibrationMeter::getVibrationLevel()
 {
     return _vibrationLevel;
 }
 
-void VibrationAnalyzer::setImpactThresholdLevel(ImpactThresholdLevel sensitivityLevel)
+void VibrationMeter::setImpactThresholdLevel(ImpactThresholdLevel sensitivityLevel)
 {
     switch (sensitivityLevel) {
         case IMPACT_THRESHOLD_LOW:
@@ -62,7 +62,7 @@ void VibrationAnalyzer::setImpactThresholdLevel(ImpactThresholdLevel sensitivity
     }
 }
 
-void VibrationAnalyzer::checkVibrationLevel()
+void VibrationMeter::checkVibrationLevel()
 {
     if (_vibrationLevel <= currentThreshold) {
         return;
@@ -76,5 +76,5 @@ void VibrationAnalyzer::checkVibrationLevel()
     lastThresholdExceedTime = millis();
 
     Logger::log(LOG_WARN, "High vibration detected, locking current file");
-    SdReader::lockFile();
+    SdReader::scheduleLock();
 }

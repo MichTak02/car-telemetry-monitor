@@ -1,5 +1,5 @@
-#ifndef VIBRATION_ANALYZER_H
-#define VIBRATION_ANALYZER_H
+#ifndef VIBRATION_METER_H
+#define VIBRATION_METER_H
 
 #include <Arduino.h>
 #include "definitions.h"
@@ -7,12 +7,13 @@
 #include "SdReader.h"
 #include "sensors/IMUDriver.h"
 
+// TODO set thresholds based on testing
 constexpr uint16_t HIGH_THRESHOLD = 1000;
 constexpr uint16_t MEDIUM_THRESHOLD = 500;
 constexpr uint16_t LOW_THRESHOLD = 100;
 constexpr uint16_t THRESHOLD_TIMEOUT = 500; // Time in ms to wait before logging another high vibration event
 
-class VibrationAnalyzer {
+class VibrationMeter {
     private:
         IMUDriver& _imuDriver;
 
@@ -31,7 +32,7 @@ class VibrationAnalyzer {
         uint32_t lastThresholdExceedTime = 0;
 
     public:
-        VibrationAnalyzer(IMUDriver& imuDriver, ImpactThresholdLevel sensitivityLevel) : _imuDriver(imuDriver) {
+        VibrationMeter(IMUDriver& imuDriver, ImpactThresholdLevel sensitivityLevel) : _imuDriver(imuDriver) {
             setImpactThresholdLevel(sensitivityLevel);
         }
 

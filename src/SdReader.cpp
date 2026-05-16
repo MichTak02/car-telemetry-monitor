@@ -8,6 +8,8 @@ char SdReader::_lockedPath[] = {0};
 bool SdReader::_isLocked = false;
 char SdReader::_fileTime[] = {0};
 StatusFlags* SdReader::_statusFlags = nullptr;
+uint32_t SdReader::_lastSyncTime = 0;
+uint32_t SdReader::_lockRequestTime = 0;
 
 bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
 {
@@ -28,12 +30,31 @@ bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
     return switchFile();
 }
 
+void SdReader::scheduleLock()
+{
+    if (_isLocked || _lockRequestTime != 0) {
+        return;
+    }
+    _lockRequestTime = millis();
+    Logger::log(LOG_WARN, "Lock scheduled after high vibration");
+}
+
 bool SdReader::switchFile()
 {
+    // If a deferred lock is pending, lock first before switching to a new file
+    if (_lockRequestTime != 0) {
+        _lockRequestTime = 0;
+        lockFile();
+        return true;
+    }
+
     cleanupIfLowSpace();
     
     Logger::log(LOG_INFO, "Switching to new file");
+    if (_file.isOpen()) {
+        _file.truncate(_file.curPosition());
     _file.close();
+    }
     _isLocked = false;
 
     TimeUtils::getTimeStrDashed(_fileTime);
@@ -51,8 +72,12 @@ bool SdReader::switchFile()
         return false;
     }
 
-    // Prevent SD card from corrupting
+    // Pre-allocate FAT clusters upfront so the chain is always intact on power loss
+    if (!_file.preAllocate(PREALLOC_SIZE)) {
+        Logger::log(LOG_WARN, "Could not pre-allocate log file");
+    }
     _file.sync();
+    _lastSyncTime = millis();
     Logger::log(LOG_INFO, "Switched to new file");
     return true;
 }
@@ -65,6 +90,7 @@ bool SdReader::lockFile()
         return true;
     }
 
+    _file.truncate(_file.curPosition());
     _file.close();
 
     if (!_sd.rename(_path, _lockedPath)) {
@@ -83,11 +109,14 @@ bool SdReader::lockFile()
         Logger::log(LOG_ERROR, "Could not reopen locked log file");
         return false;
     }
+    if (!_file.preAllocate(PREALLOC_SIZE)) {
+        Logger::log(LOG_WARN, "Could not pre-allocate locked log file");
+    }
+    _file.sync();
     Logger::log(LOG_INFO, "File locked");
-    
+    _lastSyncTime = millis();
     _isLocked = true;
     return true;
-
 }
 
 size_t SdReader::writeData(const char* data)
@@ -99,6 +128,16 @@ size_t SdReader::writeData(const char* data)
             _statusFlags->sdCard = false;
         }
         return 0;
+    }
+
+    if (millis() - _lastSyncTime >= SYNC_INTERVAL_MS) {
+        _file.sync();
+        _lastSyncTime = millis();
+    }
+
+    if (_lockRequestTime != 0 && millis() - _lockRequestTime >= LOCK_DELAY_MS) {
+        _lockRequestTime = 0;
+        lockFile();
     }
 
     return bytesWritten;

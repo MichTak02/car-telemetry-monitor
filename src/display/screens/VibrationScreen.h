@@ -2,15 +2,15 @@
 #define VIBRATION_SCREEN_H
 
 #include "GenericScreen.h"
-#include "processing/VibrationAnalyzer.h"
+#include "processing/VibrationMeter.h"
 
 class VibrationScreen : public GenericScreen {
     private:
-        VibrationAnalyzer& _vibrationAnalyzer;
+        VibrationMeter& _vibrationMeter;
         static constexpr char VIBRATION_FIELD[] = "vibTr.val";
         static constexpr uint16_t DECIMAL_MULTIPLIER = 100; // 2 decimal places
     public:
-        VibrationScreen(EasyNex& nex, VibrationAnalyzer& vibrationAnalyzer) : GenericScreen(nex), _vibrationAnalyzer(vibrationAnalyzer)
+        VibrationScreen(EasyNex& nex, VibrationMeter& vibrationMeter) : GenericScreen(nex), _vibrationMeter(vibrationMeter)
         {
             updatePeriodTicks = 1;
         };

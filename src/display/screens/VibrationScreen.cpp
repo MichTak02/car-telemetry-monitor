@@ -9,6 +9,6 @@ void VibrationScreen::disableProcessing() {}
 
 void VibrationScreen::update()
 {
-    uint32_t vibrationLevelConverted = _vibrationAnalyzer.getVibrationLevel() * DECIMAL_MULTIPLIER;
+    uint32_t vibrationLevelConverted = _vibrationMeter.getVibrationLevel() * DECIMAL_MULTIPLIER;
     _nex.writeNum(VIBRATION_FIELD, vibrationLevelConverted);
 }

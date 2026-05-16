@@ -15,7 +15,7 @@
 
 #include "Bluetooth.h"
 #include "processing/SpeedGetter.h"
-#include "processing/VibrationAnalyzer.h"
+#include "processing/VibrationMeter.h"
 #include "processing/AltitudeFusion.h"
 #include "processing/MotionFusion.h"
 #include "DisplayTypes.h"
@@ -26,7 +26,7 @@ class DisplayCommunication {
 
         SpeedGetter& _speedGetter;
         AccelerationMagnitude& _accelMagnitude;
-        VibrationAnalyzer& _vibrationAnalyzer;
+        VibrationMeter& _vibrationMeter;
         AltitudeFusion& _altitudeFusion;
         MotionFusion& _orientationFusion;
 
@@ -43,15 +43,15 @@ class DisplayCommunication {
 
         void handlePageChange();
     public:
-        DisplayCommunication(EasyNex& nex, SpeedGetter& speedGetter, AccelerationMagnitude& accelMagnitude, VibrationAnalyzer& vibrationAnalyzer, AltitudeFusion& altitudeFusion, MotionFusion& orientationFusion, StatusFlags& statusFlags, Bluetooth& bluetooth)
+        DisplayCommunication(EasyNex& nex, SpeedGetter& speedGetter, AccelerationMagnitude& accelMagnitude, VibrationMeter& vibrationMeter, AltitudeFusion& altitudeFusion, MotionFusion& orientationFusion, StatusFlags& statusFlags, Bluetooth& bluetooth)
             : _nex(nex),
               _speedGetter(speedGetter),
               _accelMagnitude(accelMagnitude),
-              _vibrationAnalyzer(vibrationAnalyzer),
+              _vibrationMeter(vibrationMeter),
               _altitudeFusion(altitudeFusion),
               _orientationFusion(orientationFusion),
               _speedScreen(_nex, _speedGetter, _accelMagnitude),
-              _vibrationScreen(_nex, _vibrationAnalyzer),
+              _vibrationScreen(_nex, _vibrationMeter),
               _altitudeScreen(_nex, _altitudeFusion),
               _orientationScreen(_nex, _orientationFusion),
               _idleScreen(_nex),
