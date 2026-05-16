@@ -79,7 +79,7 @@ void Logger::logIMUSample(IMUSample sample)
     log(sample.timestamp, LOG_DATA, SENSOR_IMU, msg);
 }
 
-const char *Logger::getLastErrorMsg()
+const char* Logger::getLastErrorMsg()
 {
     updatedLastErrorMsg = false;
     return lastErrorMsg;

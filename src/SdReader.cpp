@@ -53,7 +53,7 @@ bool SdReader::switchFile()
     Logger::log(LOG_INFO, "Switching to new file");
     if (_file.isOpen()) {
         _file.truncate(_file.curPosition());
-    _file.close();
+        _file.close();
     }
     _isLocked = false;
 
@@ -71,7 +71,7 @@ bool SdReader::switchFile()
         Logger::log(LOG_ERROR, "Could not create log file");
         return false;
     }
-
+    
     // Pre-allocate FAT clusters upfront so the chain is always intact on power loss
     if (!_file.preAllocate(PREALLOC_SIZE)) {
         Logger::log(LOG_WARN, "Could not pre-allocate log file");
@@ -93,6 +93,7 @@ bool SdReader::lockFile()
     _file.truncate(_file.curPosition());
     _file.close();
 
+    // Rename file with LOCK suffix
     if (!_sd.rename(_path, _lockedPath)) {
         if (_statusFlags != nullptr) {
             _statusFlags->sdCard = false;
@@ -101,6 +102,7 @@ bool SdReader::lockFile()
         return false;
     }
 
+    // Open renamed file
     _file = _sd.open(_lockedPath, O_WRITE | O_APPEND);
     if (!_file) {
         if (_statusFlags != nullptr) {
@@ -109,9 +111,11 @@ bool SdReader::lockFile()
         Logger::log(LOG_ERROR, "Could not reopen locked log file");
         return false;
     }
+
     if (!_file.preAllocate(PREALLOC_SIZE)) {
         Logger::log(LOG_WARN, "Could not pre-allocate locked log file");
     }
+
     _file.sync();
     Logger::log(LOG_INFO, "File locked");
     _lastSyncTime = millis();
@@ -149,7 +153,7 @@ bool SdReader::cleanupIfLowSpace()
         return false;
     }
 
-    uint64_t freeBytes = (uint64_t) _sd.vol()->freeClusterCount()
+    uint64_t freeBytes = (uint64_t) _sd.vol()->freeClusterCount() 
                        * (uint64_t) _sd.vol()->bytesPerCluster();
 
     if (freeBytes >= LOW_SPACE_THRESHOLD_BYTES) {

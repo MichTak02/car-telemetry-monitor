@@ -13,7 +13,6 @@ bool IMUDriver::init()
         return false;
     }
 
-    // TODO zjistit co dělá a přenastavit (zkopírováno z dřívějšího testování)
     _mpu.setHighPassFilter(MPU6050_HIGHPASS_DISABLE);
     _mpu.setMotionInterrupt(false);
     _mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
