@@ -4,7 +4,7 @@ void DisplayCommunication::update()
 {
     _nex.NextionListen();
 
-    if (_nex.lastCurrentPageId != _nex.currentPageId) {
+    if (_nex.lastCurrentPageId != _nex.currentPageId || _currentScreen == nullptr) {
         _handlePageChange();
         return;
     }

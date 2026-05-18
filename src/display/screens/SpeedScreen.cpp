@@ -15,7 +15,7 @@ void SpeedScreen::disableProcessing()
 
 void SpeedScreen::update()
 {
-    uint16_t speedConverted = (uint16_t) _speedGetter.getSpeed();
+    int16_t speedConverted = (int16_t) _speedGetter.getSpeed();
     uint16_t accelConverted = (uint16_t) (_accelMagnitude.getAcceleration() * DECIMAL_MULTIPLIER);
 
     _nex.writeNum(SPEED_FIELD, speedConverted);
