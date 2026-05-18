@@ -1,6 +1,6 @@
 #include "GenericUtils.h"
 
-char *GenericUtils::floatsToStr(float *values, size_t count, char delim, char *buff, uint8_t decimalPlaces)
+char *GenericUtils::floatsToStr(float *values, size_t count, char delim, char *buff, uint8_t decimalPlaces, bool addDelimiterToEnd)
 {
     char *ptr = buff;
     for (int i = 0; i < count; i++) {
@@ -8,7 +8,7 @@ char *GenericUtils::floatsToStr(float *values, size_t count, char delim, char *b
         ptr += strlen(ptr);
         
         // Don't add delimiter to last element
-        if (i + 1 != count) {
+        if (i + 1 != count || addDelimiterToEnd) {
             ptr[0] = delim;
             ptr++;
         }

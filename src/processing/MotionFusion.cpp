@@ -3,8 +3,8 @@
 void MotionFusion::enable()
 {
     if (!_started) {
-    _fusion.begin(20);
-    _orientation = {0.0f, 0.0f, 0.0f};
+        _fusion.begin(20);
+        _orientation = {0.0f, 0.0f, 0.0f};
         _started = true;
     }
     _enabled = true;

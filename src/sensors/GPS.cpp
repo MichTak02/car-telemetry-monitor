@@ -105,7 +105,7 @@ void GPS::logSample()
 
     const char delim = ',';
 
-    GenericUtils::floatsToStr(positionValues, 2, delim, msg);
-    GenericUtils::floatsToStr(dataValues, 2, delim, msg + strlen(msg), 6);
+    GenericUtils::floatsToStr(positionValues, 2, delim, msg, 6, true);
+    GenericUtils::floatsToStr(dataValues, 2, delim, msg + strlen(msg));
     Logger::log(sample.timestamp, LOG_DATA, SENSOR_GPS, msg);
 }

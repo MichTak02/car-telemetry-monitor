@@ -18,10 +18,6 @@ void SpeedScreen::update()
     uint16_t speedConverted = (uint16_t) _speedGetter.getSpeed();
     uint16_t accelConverted = (uint16_t) (_accelMagnitude.getAcceleration() * DECIMAL_MULTIPLIER);
 
-    if (speedConverted != lastSentSpeed) {
-        _nex.writeNum(SPEED_FIELD, speedConverted);
-        lastSentSpeed = speedConverted;
-    }
-
+    _nex.writeNum(SPEED_FIELD, speedConverted);
     _nex.writeNum(ACCEL_FIELD, accelConverted);
 }

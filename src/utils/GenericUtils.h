@@ -18,7 +18,7 @@ class GenericUtils {
          * @param buff char buffer to store string to
          * @return @p buff
          */
-        static char *floatsToStr(float *values, size_t count, char delim, char *buff, uint8_t decimalPlaces = 2);
+        static char *floatsToStr(float *values, size_t count, char delim, char *buff, uint8_t decimalPlaces = 2, bool addDelimiterToEnd = false);
 
         /**
          * @brief Convert float to fixed-point integer with given decimal places

@@ -6,7 +6,6 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include "definitions.h"
-#include "utils/RingBufferFloat.h"
 #include "Logger.h"
 
 #define MS2_TO_G 0.10197162129779283

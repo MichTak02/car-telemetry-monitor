@@ -46,6 +46,7 @@ InterruptStruct splitInterrupt = InterruptStruct(100000);
 InterruptStruct fusionInterrupt = InterruptStruct(50);
 InterruptStruct accelInterrupt = InterruptStruct(50);
 InterruptStruct vibrationInterrupt = InterruptStruct(50);
+InterruptStruct speedInterrupt = InterruptStruct(500);
 
 InterruptStruct displayInterrupt = InterruptStruct(100);
 
@@ -56,7 +57,8 @@ InterruptStruct* interruptList[] = {
   &fusionInterrupt,
   &accelInterrupt,
   &vibrationInterrupt,
-  &displayInterrupt
+  &displayInterrupt,
+  &speedInterrupt
 };
 const uint8_t INTERRUPT_COUNT = sizeof(interruptList) / sizeof(interruptList[0]);
 
@@ -118,8 +120,11 @@ void setup() {
 
   bluetooth.init(timer);
 
+  motionFusion.enable();
+
   eventFlags.loadCalibrationRequest = true;
   eventFlags.settingsChanged = true;
+  eventFlags.timeChanged = true;
 }
 
 void loop() {
@@ -138,7 +143,8 @@ void loop() {
   if (baroInterrupt.pendingTriggers > 0) {
     GenericUtils::handleInterrupt(&baroInterrupt.pendingTriggers, Barometer::MAX_INTERRUPTS);
     barometer.readData();
-    barometer.logData();
+    barometer.logSample();
+    altitudeFusion.update();
   }
 
   if (splitInterrupt.pendingTriggers > 0) {
@@ -162,6 +168,11 @@ void loop() {
     vibrationMeter.checkVibrationLevel();
   }
 
+  if (speedInterrupt.pendingTriggers > 0) {
+    GenericUtils::handleInterrupt(&speedInterrupt.pendingTriggers, 1);
+    speedGetter.updateSpeed();
+  }
+
 
   gps.readData();
   gps.parseData();
@@ -170,6 +181,7 @@ void loop() {
 
   if (gps.hasUpdatedData() && gps.isValid()) {
     TimeUtils::syncFromGPS(gps.getSample());
+    gps.logSample();
   }
 
   if (displayInterrupt.pendingTriggers > 0) {
