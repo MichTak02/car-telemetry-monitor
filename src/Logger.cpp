@@ -16,14 +16,14 @@ void Logger::log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType,
     
     int writtenBytes = snprintf(buff, sizeof(buff), "%s|%d|%d|%s\n", timeStr, logLevel, sensorType, msg);
     
-    if (logLevel == LOG_ERROR and sensorType != NO_SENSOR) {
+    if (logLevel == LOG_ERROR) {
         updatedLastErrorMsg = true;
         strncpy(lastErrorMsg, msg, sizeof(lastErrorMsg) - 1);
         lastErrorMsg[sizeof(lastErrorMsg) - 1] = '\0'; // Ensure null-termination
     }
 
     if (_statusFlags != nullptr && !_statusFlags->sdCard) {
-        Serial1.println(buff);
+        //Serial1.println(buff);
         return;
     }
 
@@ -61,24 +61,6 @@ void Logger::log(LogLevel logLevel, const char *msg)
     log(logLevel, NO_SENSOR, msg);
 }
 
-void Logger::logIMUSample(IMUSample sample)
-{
-    char msg[128] = {0};
-    float values[] = {
-        sample.accel.x,
-        sample.accel.y,
-        sample.accel.z,
-        sample.gyro.x,
-        sample.gyro.y,
-        sample.gyro.z
-    };
-
-    const char delim = ',';
-
-    GenericUtils::floatsToStr(values, 6, delim, msg);
-    log(sample.timestamp, LOG_DATA, SENSOR_IMU, msg);
-}
-
 const char* Logger::getLastErrorMsg()
 {
     updatedLastErrorMsg = false;
@@ -88,12 +70,4 @@ const char* Logger::getLastErrorMsg()
 bool Logger::hasUpdatedErrorMsg()
 {
     return updatedLastErrorMsg;
-}
-
-void Logger::logPressure(FloatSample pressureSample)
-{
-    char msg[16] = {0};
-    GenericUtils::floatsToStr(&pressureSample.value, 1, '_', msg);
-
-    log(pressureSample.timestamp, LOG_DATA, SENSOR_BAROMETER, msg);
 }

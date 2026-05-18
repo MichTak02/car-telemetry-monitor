@@ -9,12 +9,13 @@
 #include "Gyroscope.h"
 #include "definitions.h"
 #include "utils/TimeUtils.h"
+#include "utils/GenericUtils.h"
 
 class IMUDriver {
     private:
         static constexpr uint32_t CALIBRATION_DURATION_MS = 3000;
         static constexpr uint32_t CALIBRATION_SAMPLE_INTERVAL_MS = 5;
-        const byte I2C_ADDRESS = 0x69;
+        const byte I2C_ADDRESS = 0x68;
         StatusFlags& _statusFlags;
         Adafruit_MPU6050 _mpu;
         Accelerometer _accelerometer;

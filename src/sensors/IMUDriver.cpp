@@ -24,7 +24,6 @@ bool IMUDriver::init()
 
 void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& temp)
 {
-    /* Get new sensor events with the readings */
     sensors_event_t a, g, t;
     _mpu.getEvent(&a, &g, &t);
 
@@ -47,15 +46,33 @@ void IMUDriver::readData(FloatTuple3& accelData, FloatTuple3& gyroData, float& t
 
 void IMUDriver::readData()
 {
-    FloatTuple3 accel;
-    FloatTuple3 gyro;
+    FloatTuple3 accelData;
+    FloatTuple3 gyroData;
     float temp;
 
-    readData(accel, gyro, temp);
+    sensors_event_t a, g, t;
+    _mpu.getEvent(&a, &g, &t);
+
+    // m/s^2
+    accelData = {
+        a.acceleration.x,
+        a.acceleration.y,
+        a.acceleration.z
+    };
+
+    // rad/s
+    gyroData = {
+        g.gyro.x,
+        g.gyro.y,
+        g.gyro.z
+    };
+
+    temp = t.temperature;
+
     _timestamp = TimeUtils::getPreciseTime();
 
-    _accelerometer.setValues(accel);
-    _gyroscope.setValues(gyro);
+    _accelerometer.setValues(accelData);
+    _gyroscope.setValues(gyroData);
 }
 
 IMUSample IMUDriver::getIMUSample(Unit accelUnit, Unit gyroUnit, bool calibrated)
@@ -75,7 +92,21 @@ IMUSample IMUDriver::getIMUSample(bool calibrated)
 
 void IMUDriver::logData()
 {
-    Logger::logIMUSample(getIMUSample());
+    char msg[128] = {0};
+    IMUSample sample = getIMUSample();
+    float values[] = {
+        sample.accel.x,
+        sample.accel.y,
+        sample.accel.z,
+        sample.gyro.x,
+        sample.gyro.y,
+        sample.gyro.z
+    };
+    
+    const char delim = ',';
+
+    GenericUtils::floatsToStr(values, 6, delim, msg);
+    Logger::log(sample.timestamp, LOG_DATA, SENSOR_IMU, msg);
 }
 
 void IMUDriver::calibrate()

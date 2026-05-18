@@ -4,8 +4,7 @@ void SpeedScreen::init()
 {
     _speedGetter.enable();
     _accelMagnitude.enable();
-    _nex.writeNum(SPEED_FIELD, -1); // Initialize the speed display to 0
-    _nex.writeNum(ACCEL_FIELD, 0); // Initialize the acceleration display to 0
+    lastSentSpeed = -1;
 }
 
 void SpeedScreen::disableProcessing()
@@ -21,8 +20,8 @@ void SpeedScreen::update()
 
     if (speedConverted != lastSentSpeed) {
         _nex.writeNum(SPEED_FIELD, speedConverted);
+        lastSentSpeed = speedConverted;
     }
-    
+
     _nex.writeNum(ACCEL_FIELD, accelConverted);
-    lastSentSpeed = speedConverted;
 }

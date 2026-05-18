@@ -5,6 +5,22 @@ HardwareSerial GPSSerial(PA3, PA2);
 bool GPS::init()
 {
     GPSSerial.begin(9600);
+    delay(100);
+    GPSSerial.write(setBaud115200, sizeof(setBaud115200));
+    GPSSerial.end();
+    GPSSerial.begin(115200);
+    delay(100);
+    GPSSerial.write(disableGLL, sizeof(disableGLL));
+    delay(100);
+
+    GPSSerial.write(disableGSA, sizeof(disableGSA));
+    delay(100);
+
+    GPSSerial.write(disableGSV, sizeof(disableGSV));
+    delay(100);
+
+    GPSSerial.write(disableVTG, sizeof(disableVTG));
+    delay(100);
     return true;
 }
 
@@ -20,10 +36,6 @@ void GPS::readData()
             overflow = true;
         }
         readSomething = true;
-    }
-
-    if (readSomething) {
-        Logger::log(LOG_INFO, SENSOR_GPS, "Read GPS data");
     }
 }
 
@@ -81,15 +93,19 @@ void GPS::logSample()
     GPSSample sample = getSample();
     char msg[128] = {0};
     
-    float values[] = {
+    float positionValues[] = {
         sample.latitude,
-        sample.longitude,
+        sample.longitude
+    };
+
+    float dataValues[] = {
         sample.speed,
         sample.heading
     };
 
     const char delim = ',';
 
-    GenericUtils::floatsToStr(values, 4, delim, msg);
+    GenericUtils::floatsToStr(positionValues, 2, delim, msg);
+    GenericUtils::floatsToStr(dataValues, 2, delim, msg + strlen(msg), 6);
     Logger::log(sample.timestamp, LOG_DATA, SENSOR_GPS, msg);
 }

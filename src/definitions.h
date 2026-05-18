@@ -52,7 +52,8 @@ enum TransferStatus {
     TRANSFER_FAILED = -1,
     TRANSFER_IDLE = 0,
     TRANSFER_IN_PROGRESS = 1,
-    TRANSFER_DONE = 2
+    TRANSFER_DONE = 2,
+    PENDING_TRANSFER = 3
 };
 
 struct AccelerometerData {

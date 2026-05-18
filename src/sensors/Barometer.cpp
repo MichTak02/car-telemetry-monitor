@@ -39,7 +39,11 @@ FloatSample Barometer::getSample(Unit unit)
     };
 }
 
-void Barometer::logData()
+void Barometer::logSample()
 {
-    Logger::logPressure(getSample());
+    char msg[16] = {0};
+    FloatSample pressureSample = getSample();
+    GenericUtils::floatsToStr(&pressureSample.value, 1, '_', msg);
+
+    Logger::log(pressureSample.timestamp, LOG_DATA, SENSOR_BAROMETER, msg);
 }

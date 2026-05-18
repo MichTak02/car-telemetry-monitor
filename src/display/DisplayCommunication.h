@@ -41,7 +41,7 @@ class DisplayCommunication {
         GenericScreen* _currentScreen = nullptr;
         uint32_t _totalTicks = 0;
 
-        void handlePageChange();
+        void _handlePageChange();
     public:
         DisplayCommunication(EasyNex& nex, SpeedGetter& speedGetter, AccelerationMagnitude& accelMagnitude, VibrationMeter& vibrationMeter, AltitudeFusion& altitudeFusion, MotionFusion& orientationFusion, StatusFlags& statusFlags, Bluetooth& bluetooth)
             : _nex(nex),

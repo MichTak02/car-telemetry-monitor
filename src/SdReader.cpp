@@ -18,16 +18,15 @@ bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
 
     pinMode(csPin, OUTPUT);
 
-    delay(100);
+    delay(100); 
 
-    if (!_sd.begin(csPin, SD_SCK_MHZ(1))) {
+    if (!_sd.begin(csPin, SD_SCK_MHZ(4))) {
         _sd.printSdError(&Serial1);
         return false;
     }
 
-    _statusFlags->sdCard = true;
-
-    return switchFile();
+    _statusFlags->sdCard = switchFile();
+    return _statusFlags->sdCard;
 }
 
 void SdReader::scheduleLock()
@@ -50,7 +49,6 @@ bool SdReader::switchFile()
 
     cleanupIfLowSpace();
     
-    Logger::log(LOG_INFO, "Switching to new file");
     if (_file.isOpen()) {
         _file.truncate(_file.curPosition());
         _file.close();

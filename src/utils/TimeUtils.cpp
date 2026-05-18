@@ -111,6 +111,7 @@ void TimeUtils::syncFromGPS(const GPSSample& sample)
     }
 
     setTime(sample.gpsTime);
+    NextionUtils::setTime(DateTime(sample.gpsTime.unixTime));
     Logger::log(LOG_INFO, "Time synced from GPS");
     SdReader::switchFile();
 }

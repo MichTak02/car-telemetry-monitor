@@ -42,20 +42,6 @@ class Logger {
          * @param msg message
          */
         static void log(PreciseDateTime time, LogLevel logLevel, SensorType sensorType, const char* msg);
-        
-        /**
-         * @brief Logs pressure
-         * 
-         * @param pressureSample pressure
-         */
-        static void logPressure(FloatSample pressureSample);
-        
-        /**
-         * @brief Logs measurement from IMU sensors (accelerometer, gyroscope)
-         *
-         * @param sample sample from IMU sensors
-         */
-        static void logIMUSample(IMUSample sample);
 
         /**
          * @brief Get the last error message

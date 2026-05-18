@@ -9,6 +9,7 @@
 class MotionFusion {
     private:
         bool _enabled = false;
+        bool _started = false;
         Madgwick _fusion;
         FloatTuple3 _orientation;
         IMUDriver& _imuDriver;

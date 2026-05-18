@@ -1,9 +1,12 @@
 #include "Bluetooth.h"
 #include "SdReader.h"
 
+// HardwareSerial BTSerial(PA10, PA9);
+#define BTSerial Serial1
+
+
 Bluetooth::Bluetooth(StatusFlags& flags)
-    : _serial(_rxPin, _txPin),
-      _timer(nullptr),
+    : _timer(nullptr),
       _statusFlags(&flags),
       _lineLen(0),
       _enabled(false)
@@ -16,12 +19,13 @@ Bluetooth::Bluetooth(StatusFlags& flags)
 void Bluetooth::init(HardwareTimer* timer)
 {
     _timer = timer;
-    _serial.begin(_baud);
+    BTSerial.begin(_baud);
     _statusFlags->bluetooth = true;
 }
 
 void Bluetooth::enable()
 {
+    _transferInfo.status = TRANSFER_IDLE;
     _lineLen = 0;
     _enabled = true;
 }
@@ -35,14 +39,18 @@ void Bluetooth::update()
 {
     // Drain incoming bytes to prevent HC-06 buffer overflow even when disabled
     if (!_enabled) {
-        while (_serial.available()) {
-            _serial.read();
+        while (BTSerial.available()) {
+            BTSerial.read();
         }
         return;
     }
 
-    while (_serial.available()) {
-        char c = (char)_serial.read();
+    if (_transferInfo.status == TRANSFER_IN_PROGRESS) {
+        _sendFileContent(_transferInfo.filename);
+    }
+
+    while (BTSerial.available()) {
+        char c = (char)BTSerial.read();
 
         // Prevent buffer overflow when message too long
         if (_lineLen >= sizeof(_lineBuf) - 1) {
@@ -75,12 +83,12 @@ void Bluetooth::_processLine(const char* line)
     // LST: list all files
     if (strcmp(line, "LST") == 0) {
         _timer->pause();
-        SdReader::sendFileNamesToSerial(_serial, false);
+        SdReader::sendFileNamesToSerial(BTSerial, false);
         _timer->resume();
     // LCK: list all locked files
     } else if (strcmp(line, "LCK") == 0) {
         _timer->pause();
-        SdReader::sendFileNamesToSerial(_serial, true);
+        SdReader::sendFileNamesToSerial(BTSerial, true);
         _timer->resume();
     // GET: send file content
     } else if (strncmp(line, "GET ", 4) == 0 && line[4] != '\0') {
@@ -89,16 +97,7 @@ void Bluetooth::_processLine(const char* line)
         strncpy(_transferInfo.filename, filename, sizeof(_transferInfo.filename) - 1);
         _transferInfo.filename[sizeof(_transferInfo.filename) - 1] = '\0';
         _transferInfo.fileSize = SdReader::getFileSize(filename);
-        _transferInfo.status = TRANSFER_IN_PROGRESS;
-
-        _timer->pause();
-        if (SdReader::sendFile(_serial, filename)) {
-            _transferInfo.status = TRANSFER_DONE;
-        } else {
-            _transferInfo.status = TRANSFER_FAILED;
-            _sendErr("NOFILE");
-        }
-        _timer->resume();
+        _transferInfo.status = PENDING_TRANSFER;
     } else {
         _sendErr("CMD");
     }
@@ -106,12 +105,29 @@ void Bluetooth::_processLine(const char* line)
 
 void Bluetooth::_sendErr(const char* code)
 {
-    _serial.print("ERR ");
-    _serial.print(code);
-    _serial.print('\n');
+    BTSerial.print("ERR ");
+    BTSerial.print(code);
+    BTSerial.print('\n');
+}
+
+void Bluetooth::_sendFileContent(const char *filename)
+{
+    _timer->pause();
+    if (SdReader::sendFile(BTSerial, filename)) {
+        _transferInfo.status = TRANSFER_DONE;
+    } else {
+        _transferInfo.status = TRANSFER_FAILED;
+        _sendErr("NOFILE");
+    }
+    _timer->resume();
 }
 
 const TransferInfo& Bluetooth::getTransferInfo() const
 {
     return _transferInfo;
+}
+
+void Bluetooth::startTransfer()
+{
+    _transferInfo.status = TRANSFER_IN_PROGRESS;
 }

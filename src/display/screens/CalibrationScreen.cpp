@@ -18,7 +18,7 @@ void CalibrationScreen::update()
         _nex.writeNum(GYRO_Y_VAR, (int32_t) (settings.gyroShift.y * DECIMAL_MULTIPLIER));
         _nex.writeNum(GYRO_Z_VAR, (int32_t) (settings.gyroShift.z * DECIMAL_MULTIPLIER));
 
-        _nex.writeNum(CALIBRATING_VAR, 0);
         _nex.writeNum(CALIBRATED_VAR, 1);
+        _nex.writeNum(CALIBRATING_VAR, 0);
     }
 }

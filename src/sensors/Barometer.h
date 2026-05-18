@@ -7,6 +7,7 @@
 #include "definitions.h"
 #include "Logger.h"
 #include "utils/TimeUtils.h"
+#include "utils/GenericUtils.h"
 
 class Barometer {
     private:
@@ -60,7 +61,7 @@ class Barometer {
          * @brief Logs measured data into SD card
          * 
          */
-        void logData();
+        void logSample();
 };
 
 #endif

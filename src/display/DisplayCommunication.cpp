@@ -3,6 +3,12 @@
 void DisplayCommunication::update()
 {
     _nex.NextionListen();
+
+    if (_nex.lastCurrentPageId != _nex.currentPageId) {
+        _handlePageChange();
+        return;
+    }
+
     _totalTicks++;
 
     // Update the current screen if needed
@@ -14,18 +20,11 @@ void DisplayCommunication::update()
         }
     }
 
-    Serial1.print("curr page id: ");
-    Serial1.println(_nex.currentPageId);
-
-
-    if ((_nex.lastCurrentPageId == _nex.currentPageId) && (_currentScreen != nullptr)) {
-        return;
-    }
-
-    handlePageChange();
+    // Serial1.print("curr page id: ");
+    // Serial1.println(_nex.currentPageId);
 }
 
-void DisplayCommunication::handlePageChange()
+void DisplayCommunication::_handlePageChange()
 {
     _nex.lastCurrentPageId = _nex.currentPageId;
 

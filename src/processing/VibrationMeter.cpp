@@ -23,7 +23,7 @@ void VibrationMeter::update()
     if (!_enabled) {
         return;
     }
-    IMUSample sample = _imuDriver.getIMUSample();
+    IMUSample sample = _imuDriver.getIMUSample(UNIT_G);
     FloatTuple3 accelData = sample.accel;
         
     ax_hp = alpha * (ax_hp + accelData.x - ax_prev);

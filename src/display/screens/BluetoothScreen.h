@@ -14,7 +14,7 @@ class BluetoothScreen : public GenericScreen {
     public:
         BluetoothScreen(EasyNex& nex, Bluetooth& bluetooth) : GenericScreen(nex), _bluetooth(bluetooth)
         {
-            updatePeriodTicks = 10;
+            updatePeriodTicks = 1;
         };
         void init() override;
         void update() override;

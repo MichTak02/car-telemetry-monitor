@@ -7,11 +7,8 @@
 
 class Bluetooth {
 private:
-    static constexpr uint32_t _rxPin = PB7;
-    static constexpr uint32_t _txPin = PB6;
     static constexpr uint32_t _baud = 115200;
 
-    HardwareSerial _serial;
     HardwareTimer* _timer;
     StatusFlags* _statusFlags;
     char _lineBuf[80];
@@ -21,6 +18,7 @@ private:
 
     void _processLine(const char* line);
     void _sendErr(const char* code);
+    void _sendFileContent(const char* filename);
 
 public:
     Bluetooth(StatusFlags& flags);
@@ -49,6 +47,11 @@ public:
      * @brief Returns the latest GET transfer info (filename, size, status)
      */
     const TransferInfo& getTransferInfo() const;
+
+    /**
+     * @brief Starts the transfer of the pending file by setting its status to TRANSFER_IN_PROGRESS
+     */
+    void startTransfer();
 };
 
 #endif
