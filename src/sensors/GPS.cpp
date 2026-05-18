@@ -26,30 +26,14 @@ bool GPS::init()
 
 void GPS::readData()
 {
-    bool readSomething = false;
     bool overflow = false;
     while (GPSSerial.available())
     {
         char c = GPSSerial.read();
-        if (!_buff.addValue(&c) && !overflow) {
-            Logger::log(LOG_ERROR, SENSOR_GPS, "GPS buffer overflow");
-            overflow = true;
-        }
-        readSomething = true;
-    }
-}
-
-void GPS::parseData(uint16_t maxChars)
-{
-    char c;
-    uint16_t charsRead = 0;
-
-    while (charsRead < maxChars && _buff.readValue(&c))
-    {
         _gps.encode(c);
-        charsRead++;
     }
 }
+
 
 GPSSample GPS::getSample()
 {

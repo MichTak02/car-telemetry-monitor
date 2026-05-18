@@ -175,7 +175,6 @@ void loop() {
 
 
   gps.readData();
-  gps.parseData();
   bluetooth.update();
 
 
@@ -217,7 +216,6 @@ void handleEvents() {
     } else {
       Logger::log(LOG_ERROR, "Failed to get updated settings from Nextion display");
     }
-
     eventFlags.settingsChanged = false;
   }
 
