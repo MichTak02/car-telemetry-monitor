@@ -46,19 +46,19 @@ void VibrationMeter::setImpactThresholdLevel(ImpactThresholdLevel sensitivityLev
 {
     switch (sensitivityLevel) {
         case IMPACT_THRESHOLD_LOW:
-            currentThreshold = LOW_THRESHOLD;
+            currentThreshold = LOW_THRESHOLD_G;
             break;
         case IMPACT_THRESHOLD_MEDIUM:
-            currentThreshold = MEDIUM_THRESHOLD;
+            currentThreshold = MEDIUM_THRESHOLD_G;
             break;
         case IMPACT_THRESHOLD_HIGH:
-            currentThreshold = HIGH_THRESHOLD;
+            currentThreshold = HIGH_THRESHOLD_G;
             break;
         
         // Should not get there
         default:
             Logger::log(LOG_WARN, "Invalid sensitivity level, defaulting to medium");
-            currentThreshold = MEDIUM_THRESHOLD;
+            currentThreshold = MEDIUM_THRESHOLD_G;
     }
 }
 
@@ -68,13 +68,14 @@ void VibrationMeter::checkVibrationLevel()
         return;
     }
 
-    if (millis() - lastThresholdExceedTime < THRESHOLD_TIMEOUT) {
+    if (millis() - lastThresholdExceedTime < THRESHOLD_TIMEOUT && thresholdExceeded) {
         lastThresholdExceedTime = millis();
         return;
     }
 
     lastThresholdExceedTime = millis();
+    thresholdExceeded = true;
 
-    Logger::log(LOG_WARN, "High vibration detected, locking current file");
+    Logger::log(LOG_WARN, "High vibration detected, scheduling log lock");
     SdReader::scheduleLock();
 }

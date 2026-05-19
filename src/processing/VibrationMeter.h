@@ -7,10 +7,9 @@
 #include "SdReader.h"
 #include "sensors/IMUDriver.h"
 
-// TODO set thresholds based on testing
-constexpr uint16_t HIGH_THRESHOLD = 1000;
-constexpr uint16_t MEDIUM_THRESHOLD = 500;
-constexpr uint16_t LOW_THRESHOLD = 100;
+constexpr uint16_t HIGH_THRESHOLD_G = 15;
+constexpr uint16_t MEDIUM_THRESHOLD_G = 10;
+constexpr uint16_t LOW_THRESHOLD_G = 5;
 constexpr uint16_t THRESHOLD_TIMEOUT = 500; // Time in ms to wait before logging another high vibration event
 
 class VibrationMeter {
@@ -30,6 +29,7 @@ class VibrationMeter {
 
         uint16_t currentThreshold;
         uint32_t lastThresholdExceedTime = 0;
+        bool thresholdExceeded = false;
 
     public:
         VibrationMeter(IMUDriver& imuDriver, ImpactThresholdLevel sensitivityLevel) : _imuDriver(imuDriver) {

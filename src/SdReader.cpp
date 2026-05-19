@@ -31,9 +31,15 @@ bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
 
 void SdReader::scheduleLock()
 {
-    if (_isLocked || _lockRequestTime != 0) {
+    if (_isLocked) {
+        Logger::log(LOG_INFO, "File already locked, skipping lock");
         return;
     }
+ 
+    if (_lockRequestTime != 0) {
+        Logger::log(LOG_INFO, "Lock already scheduled, skipping lock request");
+    }
+
     _lockRequestTime = millis();
     Logger::log(LOG_WARN, "Lock scheduled after high vibration");
 }
@@ -84,12 +90,13 @@ bool SdReader::lockFile()
 {
     // Do nothing if already locked
     if (_isLocked) {
+        Serial1.println("File already locked, skipping lock");
         Logger::log(LOG_INFO, "File already locked, skipping lock");
         return true;
     }
 
-    _file.truncate(_file.curPosition());
-    _file.close();
+    uint32_t savedPos = _file.curPosition();
+    _file.close(); // no truncate — keep pre-allocated FAT chain intact
 
     // Rename file with LOCK suffix
     if (!_sd.rename(_path, _lockedPath)) {
@@ -100,8 +107,8 @@ bool SdReader::lockFile()
         return false;
     }
 
-    // Open renamed file
-    _file = _sd.open(_lockedPath, O_WRITE | O_APPEND);
+    // Open renamed file and resume at the saved write position
+    _file = _sd.open(_lockedPath, O_WRITE);
     if (!_file) {
         if (_statusFlags != nullptr) {
             _statusFlags->sdCard = false;
@@ -110,10 +117,7 @@ bool SdReader::lockFile()
         return false;
     }
 
-    if (!_file.preAllocate(PREALLOC_SIZE)) {
-        Logger::log(LOG_WARN, "Could not pre-allocate locked log file");
-    }
-
+    _file.seekSet(savedPos);
     _file.sync();
     Logger::log(LOG_INFO, "File locked");
     _lastSyncTime = millis();
