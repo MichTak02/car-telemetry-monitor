@@ -97,7 +97,7 @@ bool SdReader::lockFile()
     }
 
     uint32_t savedPos = _file.curPosition();
-    _file.close(); // no truncate — keep pre-allocated FAT chain intact
+    _file.close(); // no truncate - keep pre-allocated FAT chain intact
 
     // Rename file with LOCK suffix
     if (!_sd.rename(_path, _lockedPath)) {

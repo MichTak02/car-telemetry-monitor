@@ -16,8 +16,19 @@ class BluetoothScreen : public GenericScreen {
         {
             updatePeriodTicks = 1;
         };
+        /**
+         * @brief Initializes Bluetooth transfer display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends transfer filename, size, and status to the display
+         */
         void update() override;
+
+        /**
+         * @brief No-op - Bluetooth screen requires no active processing
+         */
         void disableProcessing() override;
 };
 

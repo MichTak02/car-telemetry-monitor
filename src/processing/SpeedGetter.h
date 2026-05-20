@@ -12,9 +12,27 @@ class SpeedGetter {
 
     public:
         SpeedGetter(GPS& gps) : _gps(gps), _speed(0.0f) {};
+
+        /**
+         * @brief Enables speed updates from GPS
+         */
         void enable();
+
+        /**
+         * @brief Disables speed updates
+         */
         void disable();
+
+        /**
+         * @brief Polls GPS for the latest speed value
+         */
         void updateSpeed();
+
+        /**
+         * @brief Returns the last measured speed in km/h
+         *
+         * @return speed in km/h, or -1 if not available
+         */
         float getSpeed();
 };
 

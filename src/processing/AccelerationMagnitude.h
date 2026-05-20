@@ -25,9 +25,26 @@ class AccelerationMagnitude {
     public:
         AccelerationMagnitude(IMUDriver& imuDriver) : _imuDriver(imuDriver) {}
 
+        /**
+         * @brief Enables acceleration magnitude computation
+         */
         void enable();
+
+        /**
+         * @brief Disables acceleration magnitude computation
+         */
         void disable();
+
+        /**
+         * @brief Reads IMU data and updates the filtered acceleration magnitude
+         */
         void update();
+
+        /**
+         * @brief Returns the latest filtered acceleration magnitude
+         *
+         * @return acceleration magnitude in m/s^2
+         */
         float getAcceleration();
 };
 

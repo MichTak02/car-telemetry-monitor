@@ -36,12 +36,38 @@ class VibrationMeter {
             setImpactThresholdLevel(sensitivityLevel);
         }
 
+        /**
+         * @brief Enables vibration monitoring
+         */
         void enable();
+
+        /**
+         * @brief Disables vibration monitoring
+         */
         void disable();
+
+        /**
+         * @brief Reads IMU data, applies high-pass filter, and updates the vibration level
+         */
         void update();
+
+        /**
+         * @brief Returns the current vibration level
+         *
+         * @return vibration level
+         */
         float getVibrationLevel();
 
+        /**
+         * @brief Sets the impact detection threshold based on sensitivity level
+         *
+         * @param sensitivityLevel desired impact sensitivity
+         */
         void setImpactThresholdLevel(ImpactThresholdLevel sensitivityLevel);
+
+        /**
+         * @brief Checks if vibration exceeds the threshold and logs an impact event if so
+         */
         void checkVibrationLevel();
 };
 

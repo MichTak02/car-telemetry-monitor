@@ -14,6 +14,11 @@ class Logger {
         static StatusFlags* _statusFlags;
     
     public:
+        /**
+         * @brief Initializes the logger with a reference to system status flags
+         *
+         * @param statusFlags reference to system status flags
+         */
         static void init(StatusFlags& statusFlags);
 
         /**
@@ -50,6 +55,11 @@ class Logger {
          */
         static const char* getLastErrorMsg();
 
+        /**
+         * @brief Returns true if a new unread error message is available
+         *
+         * @return true if error message was updated
+         */
         static bool hasUpdatedErrorMsg();
 };
 

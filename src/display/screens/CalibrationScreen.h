@@ -17,8 +17,19 @@ class CalibrationScreen : public GenericScreen {
         {
             updatePeriodTicks = 5;
         };
+        /**
+         * @brief Initializes calibration status display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends gyroscope calibration data to the display
+         */
         void update() override;
+
+        /**
+         * @brief No-op - calibration screen requires no active processing
+         */
         void disableProcessing() override;
 };
 

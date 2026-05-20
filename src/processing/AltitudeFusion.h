@@ -20,9 +20,27 @@ class AltitudeFusion {
 
     public:
         AltitudeFusion(GPS& gps, Barometer& barometer) : _altitude(0.0f), _gps(gps), _barometer(barometer) {}
+
+        /**
+         * @brief Enables altitude fusion updates
+         */
         void enable();
+
+        /**
+         * @brief Disables altitude fusion updates
+         */
         void disable();
+
+        /**
+         * @brief Fuses barometer and GPS altitude using a complementary filter
+         */
         void update();
+
+        /**
+         * @brief Returns the latest fused altitude in meters
+         *
+         * @return altitude in meters
+         */
         float getAltitude();
 };
 

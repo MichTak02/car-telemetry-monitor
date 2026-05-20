@@ -21,8 +21,19 @@ class StatusScreen : public GenericScreen {
         {
             updatePeriodTicks = 20;
         };
+        /**
+         * @brief Initializes sensor status display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends sensor status flags and error messages to the display
+         */
         void update() override;
+
+        /**
+         * @brief No-op - status screen requires no active processing
+         */
         void disableProcessing() override;
 };
 

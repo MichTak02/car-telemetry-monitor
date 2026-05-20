@@ -18,8 +18,19 @@ class SpeedScreen : public GenericScreen {
         {
             updatePeriodTicks = 1;
         };
+        /**
+         * @brief Initializes speed and acceleration display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends speed and acceleration data to the display
+         */
         void update() override;
+
+        /**
+         * @brief Disables speed getter and acceleration computation
+         */
         void disableProcessing() override;
 };
 

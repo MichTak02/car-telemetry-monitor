@@ -60,6 +60,9 @@ class DisplayCommunication {
               _bluetoothScreen(_nex, bluetooth) {
         };
 
+        /**
+         * @brief Reads the active Nextion page, switches screens if needed, and calls the current screen update
+         */
         void update();
 };
 

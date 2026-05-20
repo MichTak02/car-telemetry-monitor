@@ -14,8 +14,19 @@ class VibrationScreen : public GenericScreen {
         {
             updatePeriodTicks = 1;
         };
+        /**
+         * @brief Initializes vibration display field
+         */
         void init() override;
+
+        /**
+         * @brief Sends vibration level to the display
+         */
         void update() override;
+
+        /**
+         * @brief Disables vibration meter
+         */
         void disableProcessing() override;
 };
 

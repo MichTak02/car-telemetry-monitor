@@ -19,8 +19,19 @@ class AltitudeScreen : public GenericScreen {
         {
             updatePeriodTicks = 10;
         };
+        /**
+         * @brief Initializes altitude, min, and max display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends fused altitude data to the display
+         */
         void update() override;
+
+        /**
+         * @brief Disables altitude fusion
+         */
         void disableProcessing() override;
 };
 

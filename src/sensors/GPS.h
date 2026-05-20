@@ -66,11 +66,43 @@ class GPS {
 
     public:
         GPS(StatusFlags& statusFlags) : _statusFlags(statusFlags) {}
+
+        /**
+         * @brief Configures GPS baud rate and disables unused NMEA sentences
+         *
+         * @return true if initialization succeeds
+         */
         bool init();
+
+        /**
+         * @brief Reads and feeds bytes from the GPS serial port to the parser
+         */
         void readData();
+
+        /**
+         * @brief Returns the latest GPS sample
+         *
+         * @return GPSSample with current position, speed, and time
+         */
         GPSSample getSample();
+
+        /**
+         * @brief Returns true if the GPS fix is valid
+         *
+         * @return true if GPS data is valid
+         */
         bool isValid();
+
+        /**
+         * @brief Returns true if new GPS data was received since the last check
+         *
+         * @return true if data was updated
+         */
         bool hasUpdatedData();
+
+        /**
+         * @brief Logs the current GPS sample to the SD card
+         */
         void logSample();
 };
 

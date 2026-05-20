@@ -17,8 +17,19 @@ class OrientationScreen : public GenericScreen {
         {
             updatePeriodTicks = 1;
         };
+        /**
+         * @brief Initializes pitch and roll display fields
+         */
         void init() override;
+
+        /**
+         * @brief Sends orientation angles to the display
+         */
         void update() override;
+
+        /**
+         * @brief Disables motion fusion
+         */
         void disableProcessing() override;
 };
 
