@@ -3,6 +3,9 @@
 bool Barometer::init()
 {
     _statusFlags.barometer = _bmp.begin(I2C_ADDRESS);
+    if (!_statusFlags.barometer) {
+        Logger::log(LOG_ERROR, SENSOR_BAROMETER, "Could not initialize BMP280");
+    }
     return _statusFlags.barometer;
 }
 

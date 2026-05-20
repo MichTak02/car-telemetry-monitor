@@ -94,30 +94,19 @@ void setup() {
 
   Logger::init(statusFlags);
   NextionUtils::init(nex);
-  TimeUtils::init();
-
-  if (!SdReader::init(CS_PIN, statusFlags)) {
-      Serial.println("Could not init Logger");
-  }
-
-  if (!imuDriver.init()) {
-    Serial.println("Could not init IMU driver");
-  }
-
-  if (!barometer.init()) {
-    Serial.println("Could not init Barometer");
-  }
-
+  SdReader::init(CS_PIN, statusFlags);
+  imuDriver.init();
+  barometer.init();
   gps.init();
+
+  TimeUtils::init();
+  bluetooth.init(timer);
+  motionFusion.enable();
 
   timer = new HardwareTimer(TIM3);
   timer->setOverflow(1000, MICROSEC_FORMAT);
   timer->attachInterrupt(onTimer);
   timer->resume();
-
-  bluetooth.init(timer);
-
-  motionFusion.enable();
 
   eventFlags.loadCalibrationRequest = true;
   eventFlags.settingsChanged = true;

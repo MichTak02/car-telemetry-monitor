@@ -22,6 +22,7 @@ bool SdReader::init(uint8_t csPin, StatusFlags& statusFlags)
 
     if (!_sd.begin(csPin, SD_SCK_MHZ(4))) {
         _sd.printSdError(&Serial1);
+        Logger::log(LOG_ERROR, "Failed to initialize SD card");
         return false;
     }
 
