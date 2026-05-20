@@ -24,11 +24,12 @@ class NextionUtils {
         static constexpr char GYRO_X_FIELD[] = "gyroShiftX";
         static constexpr char GYRO_Y_FIELD[] = "gyroShiftY";
         static constexpr char GYRO_Z_FIELD[] = "gyroShiftZ";
+        static constexpr uint32_t ERROR_NUMBER = 777777;
 
     public:
 		static void init(EasyNex& nex);
 		static bool getImpactAndSegment(ImpactThresholdLevel& impactThresholdLevel, SegmentDurationLevel& segmentDurationLevel);
-		static bool getTimeSettings(DateTime& time, bool& timeSync, uint32_t& timeZone);
+		static bool getTimeSettings(DateTime& time, bool& timeSync, int8_t& timeZone);
         static bool getCalibrationSettings(FloatTuple3& gyroShift);
 		static bool setTime(const DateTime& time);
 };

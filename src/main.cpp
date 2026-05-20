@@ -81,9 +81,6 @@ Bluetooth bluetooth(statusFlags);
 DisplayCommunication displayCommunication(nex, speedGetter, accelMagnitude, vibrationMeter, altitudeFusion, motionFusion, statusFlags, bluetooth);
 
 
-// TODO smazat
-void listDir(const char* path);
-
 void onTimer() {
   globalTickMs++;
 }
@@ -139,7 +136,7 @@ void loop() {
     imuDriver.readData();
     imuDriver.logData();
   }
-
+  
   if (baroInterrupt.pendingTriggers > 0) {
     GenericUtils::handleInterrupt(&baroInterrupt.pendingTriggers, Barometer::MAX_INTERRUPTS);
     barometer.readData();
@@ -161,7 +158,7 @@ void loop() {
     GenericUtils::handleInterrupt(&accelInterrupt.pendingTriggers, 1);
     accelMagnitude.update();
   }
-
+  
   if (vibrationInterrupt.pendingTriggers > 0) {
     GenericUtils::handleInterrupt(&vibrationInterrupt.pendingTriggers, 1);
     vibrationMeter.update();
@@ -201,10 +198,10 @@ void handleEvents() {
     } else {
       Logger::log(LOG_ERROR, "Failed to get calibration settings from Nextion display");
     }
-
+    
     eventFlags.loadCalibrationRequest = false;
   }
-
+  
   if (eventFlags.settingsChanged) {
     ImpactThresholdLevel impact;
     SegmentDurationLevel segment;
@@ -222,7 +219,7 @@ void handleEvents() {
   if (eventFlags.timeChanged) {
     DateTime updatedTime;
     bool timeSync;
-    uint32_t timeZone;
+    int8_t timeZone;
     if (NextionUtils::getTimeSettings(updatedTime, timeSync, timeZone)) {
       TimeUtils::setTime(updatedTime);
       Settings::setTimeSync(timeSync);

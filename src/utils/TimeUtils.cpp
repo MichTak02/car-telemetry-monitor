@@ -13,7 +13,7 @@ void TimeUtils::init()
 {
     DateTime initTime;
     bool timeSync = false;
-    uint32_t timeZone = 0;
+    int8_t timeZone = 0;
     if (NextionUtils::getTimeSettings(initTime, timeSync, timeZone))
     {
         Settings::setTimeZone(timeZone);
@@ -92,7 +92,8 @@ PreciseDateTime TimeUtils::fromGPSTime(uint16_t year, uint8_t month, uint8_t day
     uint32_t totalMs = centisecond * 10u + ageMs;
     return {
         dt.unixtime() + (totalMs / 1000) + Settings::getCurrent().timeZone * 3600,
-        (uint16_t)(totalMs % 1000)};
+        (uint16_t)(totalMs % 1000)
+    };
 }
 
 void TimeUtils::syncFromGPS(const GPSSample& sample)
